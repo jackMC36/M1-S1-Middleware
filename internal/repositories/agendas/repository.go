@@ -1,50 +1,51 @@
-package users
+package agendas
 
 import (
-	"github.com/gofrs/uuid"
 	"middleware/example/internal/helpers"
 	"middleware/example/internal/models"
+
+	"github.com/gofrs/uuid"
 )
 
-func GetAllUsers() ([]models.User, error) {
+func GetAllAgendas() ([]models.Agenda, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
 		return nil, err
 	}
-	rows, err := db.Query("SELECT * FROM users")
+	rows, err := db.Query("SELECT * FROM agendas")
 	helpers.CloseDB(db)
 	if err != nil {
 		return nil, err
 	}
 
 	// parsing datas in object slice
-	users := []models.User{}
+	agendas := []models.Agenda{}
 	for rows.Next() {
-		var data models.User
+		var data models.Agenda
 		err = rows.Scan(&data.Id, &data.Name)
 		if err != nil {
 			return nil, err
 		}
-		users = append(users, data)
+		agendas = append(agendas, data)
 	}
 	// don't forget to close rows
 	_ = rows.Close()
 
-	return users, err
+	return agendas, err
 }
 
-func GetUserById(id uuid.UUID) (*models.User, error) {
+func GetAgendaById(id uuid.UUID) (*models.Agenda, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
 		return nil, err
 	}
-	row := db.QueryRow("SELECT * FROM users WHERE id=?", id.String())
+	row := db.QueryRow("SELECT * FROM agendas WHERE id=?", id.String())
 	helpers.CloseDB(db)
 
-	var user models.User
-	err = row.Scan(&user.Id, &user.Name)
+	var agenda models.Agenda
+	err = row.Scan(&agenda.Id, &agenda.Name)
 	if err != nil {
 		return nil, err
 	}
-	return &user, err
+	return &agenda, err
 }

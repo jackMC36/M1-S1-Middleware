@@ -1,22 +1,22 @@
-package users
+package agendas
 
 import (
 	"encoding/json"
 	"middleware/example/internal/helpers"
-	"middleware/example/internal/services/users"
+	"middleware/example/internal/services/agendas"
 	"net/http"
 )
 
-// GetUsers
-// @Tags         users
-// @Summary      Get all users.
-// @Description  Get all users.
+// Getagendas
+// @Tags         agendas
+// @Summary      Get all agendas.
+// @Description  Get all agendas.
 // @Success      200            {array}  models.User
 // @Failure      500             "Something went wrong"
-// @Router       /users [get]
-func GetUsers(w http.ResponseWriter, _ *http.Request) {
+// @Router       /agendas [get]
+func Getagendas(w http.ResponseWriter, _ *http.Request) {
 	// calling service
-	users, err := users.GetAllUsers()
+	agendas, err := agendas.GetAllagendas()
 	if err != nil {
 		body, status := helpers.RespondError(err)
 		w.WriteHeader(status)
@@ -27,7 +27,7 @@ func GetUsers(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	body, _ := json.Marshal(users)
+	body, _ := json.Marshal(agendas)
 	_, _ = w.Write(body)
 	return
 }
