@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func GetAllalertes() ([]models.Alerte, error) {
+func GetAllAlertes() ([]models.Alerte, error) {
 	var err error
 	// calling repository
 	alertes, err := repository.GetAllAlertes()

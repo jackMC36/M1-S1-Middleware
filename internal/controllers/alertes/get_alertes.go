@@ -16,7 +16,7 @@ import (
 // @Router       /alertes [get]
 func GetAlertes(w http.ResponseWriter, _ *http.Request) {
 	// calling service
-	alertes, err := alertes.GetAllalertes()
+	alertes, err := alertes.GetAllAlertes()
 	if err != nil {
 		body, status := helpers.RespondError(err)
 		w.WriteHeader(status)
