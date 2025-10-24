@@ -29,5 +29,4 @@ Documentation is visible in **api** directory ([here](api/swagger.json)).
 
 ## Authors
 Jacques KOZIK
-Cesar ARCHILA
-Marc ACHREF
+Marc MORCOS
