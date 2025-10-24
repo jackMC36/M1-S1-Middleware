@@ -1,4 +1,4 @@
-package agendas
+package alertes
 
 import (
 	"middleware/example/internal/helpers"
@@ -7,45 +7,45 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-func GetAllAgendas() ([]models.Agenda, error) {
+func GetAllAlertes() ([]models.Alerte, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
 		return nil, err
 	}
-	rows, err := db.Query("SELECT * FROM agendas")
+	rows, err := db.Query("SELECT * FROM alertes")
 	helpers.CloseDB(db)
 	if err != nil {
 		return nil, err
 	}
 
 	// parsing datas in object slice
-	agendas := []models.Agenda{}
+	alertes := []models.Alerte{}
 	for rows.Next() {
-		var data models.Agenda
-		err = rows.Scan(&data.Id, &data.Name)
+		var data models.Alerte
+		err = rows.Scan(&data.Id, &data.Email, &data.AgendaId)
 		if err != nil {
 			return nil, err
 		}
-		agendas = append(agendas, data)
+		alertes = append(alertes, data)
 	}
 	// don't forget to close rows
 	_ = rows.Close()
 
-	return agendas, err
+	return alertes, err
 }
 
-func GetAgendaById(id uuid.UUID) (*models.Agenda, error) {
+func GetAlerteById(id uuid.UUID) (*models.Alerte, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
 		return nil, err
 	}
-	row := db.QueryRow("SELECT * FROM agendas WHERE id=?", id.String())
+	row := db.QueryRow("SELECT * FROM alertes WHERE id=?", id.String())
 	helpers.CloseDB(db)
 
-	var agenda models.Agenda
-	err = row.Scan(&agenda.Id, &agenda.Name, &agenda.UcaId)
+	var alerte models.Alerte
+	err = row.Scan(&alerte.Id, &alerte.Email, &alerte.AgendaId)
 	if err != nil {
 		return nil, err
 	}
-	return &agenda, err
+	return &alerte, err
 }

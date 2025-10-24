@@ -14,7 +14,7 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Route("/agendas", func(r chi.Router) { // route /agendas
-		r.Get("/", agendas.Getagendas)        // GET /agendas
+		r.Get("/", agendas.GetAgendas)        // GET /agendas
 		r.Route("/{id}", func(r chi.Router) { // route /agendas/{id}
 			r.Use(agendas.Context)        // Use Context method to get agenda ID
 			r.Get("/", agendas.GetAgenda) // GET /agendas/{id}
@@ -33,9 +33,17 @@ func init() {
 	schemes := []string{
 		`CREATE TABLE IF NOT EXISTS agendas (
 			id VARCHAR(255) PRIMARY KEY NOT NULL UNIQUE,
+			ucaid VARCHAR(255) NOT NULL,
 			name VARCHAR(255) NOT NULL
 		);`,
+		`CREATE TABLE IF NOT EXISTS alertes (
+			id VARCHAR(255) PRIMARY KEY NOT NULL UNIQUE,
+			email VARCHAR(255) NOT NULL,
+			agendaid VARCHAR(255),
+			FOREIGN KEY (agendaid) REFERENCES agendas(id)
+		);`,
 	}
+
 	for _, scheme := range schemes {
 		if _, err := db.Exec(scheme); err != nil {
 			logrus.Fatalln("Could not generate table ! Error was : " + err.Error())
