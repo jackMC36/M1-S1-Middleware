@@ -31,7 +31,7 @@ func Context(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "agendaId", agendaId) // We fill context with a Key-valued variable
+		ctx := context.WithValue(r.Context(), "agendaId", agendaId)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
