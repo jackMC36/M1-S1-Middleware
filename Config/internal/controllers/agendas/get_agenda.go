@@ -20,7 +20,7 @@ import (
 // @Router       /agendas/{id} [get]
 func GetAgenda(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	AgendaId, _ := ctx.Value("AgendaId").(uuid.UUID)
+	AgendaId, _ := ctx.Value("agendaId").(uuid.UUID)
 
 	Agenda, err := agendas.GetAgendaById(AgendaId)
 	if err != nil {

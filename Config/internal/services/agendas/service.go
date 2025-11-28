@@ -63,12 +63,12 @@ func PostNewAgenda(id uuid.UUID, name string, ucaid uuid.UUID) (*models.Agenda, 
 	if err != nil {
 		if err.Error() == sql.ErrNoRows.Error() {
 			return nil, &models.ErrorNotFound{
-				Message: "agenda not found",
+				Message: "agenda not found (sql.errNoRows)",
 			}
 		}
-		logrus.Errorf("error deleting agenda %s : %s", id.String(), err.Error())
+		logrus.Errorf("services/agendas: error posting agenda %s : %s", id.String(), err.Error())
 		return nil, &models.ErrorGeneric{
-			Message: fmt.Sprintf("Something went wrong while deleting agenda %s", id.String()),
+			Message: fmt.Sprintf("Something went wrong while posting agenda %s", id.String()),
 		}
 	}
 

@@ -7,13 +7,14 @@ import (
 	"net/http"
 )
 
-// Getagendas
+// GetAgendas
 // @Tags         agendas
-// @Summary      Get all agendas.
-// @Description  Get all agendas.
-// @Success      200            {array}  models.User
-// @Failure      500             "Something went wrong"
-// @Router       /agendas [get]
+// @Summary      Get all Agendas.
+// @Description  Get all Agendas.
+// @Param        none
+// @Success      200            {object}  models.Agenda
+// @Failure      500            "Something went wrong"
+// @Router       /agendas/ [get]
 func GetAgendas(w http.ResponseWriter, _ *http.Request) {
 	agendas, err := agendas.GetAllagendas()
 	if err != nil {

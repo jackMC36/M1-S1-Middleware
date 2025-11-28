@@ -21,7 +21,7 @@ func GetAllAgendas() ([]models.Agenda, error) {
 	agendas := []models.Agenda{}
 	for rows.Next() {
 		var data models.Agenda
-		err = rows.Scan(&data.Id, &data.Name)
+		err = rows.Scan(&data.Id, &data.UcaId, &data.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -41,7 +41,7 @@ func GetAgendaById(id uuid.UUID) (*models.Agenda, error) {
 	helpers.CloseDB(db)
 
 	var agenda models.Agenda
-	err = row.Scan(&agenda.Id, &agenda.Name, &agenda.UcaId)
+	err = row.Scan(&agenda.Id, &agenda.UcaId, &agenda.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -53,31 +53,43 @@ func DeleteAgendaById(id uuid.UUID) (*models.Agenda, error) {
 	if err != nil {
 		return nil, err
 	}
-	row := db.QueryRow("DELETE * FROM agendas WHERE id=?", id.String())
+
+	row := db.QueryRow("SELECT * FROM agendas WHERE id=?", id.String())
+	var agenda models.Agenda
+	err = row.Scan(&agenda.Id, &agenda.UcaId, &agenda.Name)
+	if err != nil {
+		helpers.CloseDB(db)
+		return nil, err
+	}
+
+	_, err = db.Exec("DELETE FROM agendas WHERE id=?", id.String())
 	helpers.CloseDB(db)
 
-	var agenda models.Agenda
-	err = row.Scan(&agenda.Id, &agenda.Name, &agenda.UcaId)
 	if err != nil {
 		return nil, err
 	}
-	return &agenda, err
+	return &agenda, nil
 }
 
 func PostNewAgenda(id uuid.UUID, name string, ucaid uuid.UUID) (*models.Agenda, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
 		return nil, err
+
 	}
-	row := db.QueryRow("INSERT into agendas * VALUES (?,?,?)", id.String(), name, ucaid.String())
+	_, err = db.Exec("INSERT INTO agendas (id, ucaid, name) VALUES (?, ?, ?)", id.String(), ucaid.String(), name)
 	helpers.CloseDB(db)
 
-	var agenda models.Agenda
-	err = row.Scan(&agenda.Id, &agenda.Name, &agenda.UcaId)
 	if err != nil {
 		return nil, err
 	}
-	return &agenda, err
+
+	agenda := &models.Agenda{
+		Id:    &id,
+		Name:  name,
+		UcaId: &ucaid,
+	}
+	return agenda, nil
 }
 
 func ReplaceAgendaById(old_id uuid.UUID, new_id uuid.UUID, name string, ucaid uuid.UUID) (*models.Agenda, error) {

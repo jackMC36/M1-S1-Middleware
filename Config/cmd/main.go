@@ -14,12 +14,12 @@ func main() {
 	r := chi.NewRouter()
 
 	r.Route("/agendas", func(r chi.Router) { // route /agendas
-		r.Get("/", agendas.GetAgendas) // GET /agendas
-		r.Post("/", agendas.PostNewAgenda)
+		r.Get("/", agendas.GetAgendas)        // GET /agendas
+		r.Post("/", agendas.PostNewAgenda)    // POST /agendas
 		r.Route("/{id}", func(r chi.Router) { // route /agendas/{id}
-			r.Use(agendas.Context)        // Use Context method to get agenda ID
-			r.Get("/", agendas.GetAgenda) // GET /agendas/{id}
-
+			r.Use(agendas.Context)              // Use Context method to get agenda ID
+			r.Get("/", agendas.GetAgenda)       // GET /agendas/{id}
+			r.Delete("/", agendas.DeleteAgenda) // DELETE /agendas/{id}
 		})
 	})
 
@@ -44,7 +44,6 @@ func init() {
 			agendaid VARCHAR(255),
 			FOREIGN KEY (agendaid) REFERENCES agendas(id)
 		);`,
-
 	}
 
 	for _, scheme := range schemes {

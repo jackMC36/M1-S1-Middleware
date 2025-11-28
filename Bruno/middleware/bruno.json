@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "name": "middleware",
+  "name": "Config",
   "type": "collection",
   "ignore": [
     "node_modules",
