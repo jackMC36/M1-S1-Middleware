@@ -18,9 +18,9 @@ import (
 // @Failure      422            "Cannot parse id"
 // @Failure      500            "Something went wrong"
 // @Router       /alertes/{id} [get]
-func Getalerte(w http.ResponseWriter, r *http.Request) {
+func GetAlerte(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	alerteId, _ := ctx.Value("alerteId").(uuid.UUID) // getting key set in context.go
+	alerteId, _ := ctx.Value("alerteId").(uuid.UUID)
 
 	alerte, err := alertes.GetalerteById(alerteId)
 	if err != nil {

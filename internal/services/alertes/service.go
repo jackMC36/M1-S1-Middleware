@@ -40,3 +40,38 @@ func GetalerteById(id uuid.UUID) (*models.Alerte, error) {
 
 	return alerte, err
 }
+
+func DeleteAlerteById(id uuid.UUID) (*models.Alerte, error) {
+	alerte, err := repository.DeleteAlerteById(id)
+	if err != nil {
+		if err.Error() == sql.ErrNoRows.Error() {
+			return nil, &models.ErrorNotFound{
+				Message: "alerte not found",
+			}
+		}
+		logrus.Errorf("error deleting alerte %s : %s", id.String(), err.Error())
+		return nil, &models.ErrorGeneric{
+			Message: fmt.Sprintf("Something went wrong while deleting alerte %s", id.String()),
+		}
+	}
+
+	return alerte, err
+}
+
+func PostNewAlerte(agendaId uuid.UUID, email string) (*models.Alerte, error) {
+	if email == "" {
+		return nil, &models.ErrorGeneric{
+			Message: "Email is required",
+		}
+	}
+
+	alerte, err := repository.PostNewAlerte(agendaId, email)
+	if err != nil {
+		logrus.Errorf("error creating alerte for agenda %s : %s", agendaId.String(), err.Error())
+		return nil, &models.ErrorGeneric{
+			Message: "Something went wrong while creating alerte",
+		}
+	}
+
+	return alerte, nil
+}

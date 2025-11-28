@@ -15,7 +15,6 @@ import (
 // @Failure      500             "Something went wrong"
 // @Router       /alertes [get]
 func GetAlertes(w http.ResponseWriter, _ *http.Request) {
-	// calling service
 	alertes, err := alertes.GetAllAlertes()
 	if err != nil {
 		body, status := helpers.RespondError(err)

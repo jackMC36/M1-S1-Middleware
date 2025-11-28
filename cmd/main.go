@@ -14,77 +14,9 @@ import (
 func main() {
 	r := chi.NewRouter()
 
-<<<<<<< HEAD
-	r.Route("/agendas", func(r chi.Router) {
-		r.Get("/", agendas.GetAgendas)
-		r.Post("/", agendas.PostNewAgenda)
-		r.Route("/{id}", func(r chi.Router) {
-			r.Use(agendas.Context)
-			r.Get("/", agendas.GetAgenda)
-		})
-	})
-
-	// Add a simple HTML form for testing
-	r.Get("/form", func(w http.ResponseWriter, r *http.Request) {
-		html := `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create Agenda</title>
-</head>
-<body>
-    <h1>Create New Agenda</h1>
-    <form id="agendaForm">
-        <label for="id">ID (UUID):</label><br>
-        <input type="text" id="id" name="id" placeholder="550e8400-e29b-41d4-a716-446655440000"><br><br>
-        
-        <label for="name">Name:</label><br>
-        <input type="text" id="name" name="name" placeholder="My Agenda"><br><br>
-        
-        <label for="ucaid">User ID (UUID):</label><br>
-        <input type="text" id="ucaid" name="ucaid" placeholder="123e4567-e89b-12d3-a456-426614174000"><br><br>
-        
-        <button type="submit">Create Agenda</button>
-    </form>
-
-    <script>
-        document.getElementById('agendaForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = {
-                id: document.getElementById('id').value,
-                name: document.getElementById('name').value,
-                ucaid: document.getElementById('ucaid').value
-            };
-
-            try {
-                const response = await fetch('/agendas', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
-
-                if (response.ok) {
-                    const result = await response.json();
-                    alert('Agenda created successfully: ' + JSON.stringify(result));
-                } else {
-                    alert('Error: ' + response.statusText);
-                }
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
-        });
-    </script>
-</body>
-</html>`
-		w.Header().Set("Content-Type", "text/html")
-		w.Write([]byte(html))
-	})
-=======
 	r.Route("/agendas", func(r chi.Router) { // route /agendas
-		r.Get("/", agendas.GetAgendas)        // GET /agendas
+		r.Get("/", agendas.GetAgendas) // GET /agendas
+		r.Post("/", agendas.PostNewAgenda)
 		r.Route("/{id}", func(r chi.Router) { // route /agendas/{id}
 			r.Use(agendas.Context)        // Use Context method to get agenda ID
 			r.Get("/", agendas.GetAgenda) // GET /agendas/{id}
@@ -96,14 +28,12 @@ func main() {
 		})
 	})
 
-		 
-	r.Route("/events", func(r chi.Router) {// route /events
-		 r.Route("/{id}", func(r chi.Router) { // route /events/{id}
-			 r.Use(events.Context) 	  // Use Context method to get event ID
-			 r.Get("/", events.Getevent) // GET /events/{id}
-		 })
-	 })
->>>>>>> 9d0866c6da13aec2a0f230a60778282837b1af03
+	r.Route("/events", func(r chi.Router) { // route /events
+		r.Route("/{id}", func(r chi.Router) { // route /events/{id}
+			r.Use(events.Context)       // Use Context method to get event ID
+			r.Get("/", events.Getevent) // GET /events/{id}
+		})
+	})
 
 	logrus.Info("[INFO] Web server started. Now listening on *:8080")
 	logrus.Fatalln(http.ListenAndServe(":8080", r))
@@ -145,8 +75,6 @@ func init() {
 			FOREIGN KEY (event_id) REFERENCES events(id),
 			FOREIGN KEY (agenda_id) REFERENCES agendas(id)
 		);`,
-
-
 	}
 
 	for _, scheme := range schemes {

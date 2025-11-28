@@ -49,3 +49,42 @@ func GetAlerteById(id uuid.UUID) (*models.Alerte, error) {
 	}
 	return &alerte, err
 }
+
+func DeleteAlerteById(id uuid.UUID) (*models.Alerte, error) {
+	db, err := helpers.OpenDB()
+	if err != nil {
+		return nil, err
+	}
+	row := db.QueryRow("DELETE * FROM alertes WHERE id=?", id.String())
+	helpers.CloseDB(db)
+
+	var alerte models.Alerte
+	err = row.Scan(&alerte.Id, &alerte.Email, &alerte.AgendaId)
+	if err != nil {
+		return nil, err
+	}
+	return &alerte, err
+}
+func PostNewAlerte(agendaId uuid.UUID, email string) (*models.Alerte, error) {
+	db, err := helpers.OpenDB()
+	if err != nil {
+		return nil, err
+	}
+	alerteId := uuid.Must(uuid.NewV4())
+
+	_, err = db.Exec("INSERT INTO alertes (id, email, agendaid) VALUES (?, ?, ?)",
+		alerteId.String(), email, agendaId.String())
+	helpers.CloseDB(db)
+
+	if err != nil {
+		return nil, err
+	}
+
+	alerte := &models.Alerte{
+		Id:       &alerteId,
+		Email:    email,
+		AgendaId: &agendaId,
+	}
+
+	return alerte, nil
+}
