@@ -28,5 +28,4 @@ func GetAgendas(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	body, _ := json.Marshal(agendas)
 	_, _ = w.Write(body)
-	return
 }
