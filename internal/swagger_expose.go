@@ -1,11 +1,11 @@
 package internal
 
-// @title        middleware/example
+// @title        middleware/ Config API
 // @version      1.0.0
-// @description  API to manage users.
+// @description  API to manage Agendas and Alerts.
 
-// @contact.name   Justine Bachelard.
-// @contact.email  justine.bachelard@ext.uca.fr
+// @contact.name   Jacques KOZIK .
+// @contact.email  Jacques.KOZIK@etu.uca.fr
 
 // @schemes   http
 // @BasePath  /

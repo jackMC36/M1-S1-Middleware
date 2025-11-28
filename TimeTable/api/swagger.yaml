@@ -1,0 +1,83 @@
+basePath: /
+definitions:
+  models.Event:
+    properties:
+      agendaIds:
+        description: tableau d’UUIDs
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      end:
+        type: string
+      id:
+        type: string
+      lastUpdate:
+        description: nullable dans l’iCal
+        type: string
+      location:
+        type: string
+      name:
+        type: string
+      start:
+        description: 'RFC3339 avec offset (ex: +01:00)'
+        type: string
+      uid:
+        type: string
+    type: object
+info:
+  contact:
+    email: Marc_Achraf_Atef.MORCOS@etu.uca.fr
+    name: Marc MORCOS.
+  description: API to manage TimeTable.
+  title: middleware/TimeTable API
+  version: 1.0.0
+paths:
+  /agendas/{id}/events:
+    get:
+      description: Returns all events linked to the provided agenda ID.
+      parameters:
+      - description: Agenda UUID formatted ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Event'
+            type: array
+        "422":
+          description: Cannot parse id
+        "500":
+          description: Something went wrong
+      summary: Get events for an agenda.
+      tags:
+      - events
+  /events/{id}:
+    get:
+      description: Get a event.
+      parameters:
+      - description: event UUID formatted ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Event'
+        "422":
+          description: Cannot parse id
+        "500":
+          description: Something went wrong
+      summary: Get a event.
+      tags:
+      - events
+schemes:
+- http
+swagger: "2.0"
