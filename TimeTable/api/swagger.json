@@ -1,0 +1,125 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "API to manage TimeTable.",
+        "title": "middleware/TimeTable API",
+        "contact": {
+            "name": "Marc MORCOS.",
+            "email": "Marc_Achraf_Atef.MORCOS@etu.uca.fr"
+        },
+        "version": "1.0.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/agendas/{id}/events": {
+            "get": {
+                "description": "Returns all events linked to the provided agenda ID.",
+                "tags": [
+                    "events"
+                ],
+                "summary": "Get events for an agenda.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Agenda UUID formatted ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Event"
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Cannot parse id"
+                    },
+                    "500": {
+                        "description": "Something went wrong"
+                    }
+                }
+            }
+        },
+        "/events/{id}": {
+            "get": {
+                "description": "Get a event.",
+                "tags": [
+                    "events"
+                ],
+                "summary": "Get a event.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "event UUID formatted ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Event"
+                        }
+                    },
+                    "422": {
+                        "description": "Cannot parse id"
+                    },
+                    "500": {
+                        "description": "Something went wrong"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.Event": {
+            "type": "object",
+            "properties": {
+                "agendaIds": {
+                    "description": "tableau d’UUIDs",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastUpdate": {
+                    "description": "nullable dans l’iCal",
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "start": {
+                    "description": "RFC3339 avec offset (ex: +01:00)",
+                    "type": "string"
+                },
+                "uid": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
