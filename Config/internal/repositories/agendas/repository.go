@@ -100,3 +100,25 @@ func ReplaceAgendaById(old_id uuid.UUID, new_id uuid.UUID, name string, ucaid uu
 	}
 	return agenda, nil
 }
+
+func UpdateAgendaById(id uuid.UUID, name string, ucaid uuid.UUID) (*models.Agenda, error) {
+	db, err := helpers.OpenDB()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec("UPDATE agendas SET name = ?, ucaid = ? WHERE id = ?", name, ucaid.String(), id.String())
+	helpers.CloseDB(db)
+
+	if err != nil {
+		return nil, err
+	}
+
+	updatedAgenda := &models.Agenda{
+		Id:    &id,
+		Name:  name,
+		UcaId: &ucaid,
+	}
+
+	return updatedAgenda, nil
+}

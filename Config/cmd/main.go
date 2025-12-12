@@ -20,6 +20,7 @@ func main() {
 		r.Route("/{id}", func(r chi.Router) { // route /agendas/{id}
 			r.Use(agendas.Context)              // Use Context method to get agenda ID
 			r.Get("/", agendas.GetAgenda)       // GET /agendas/{id}
+			r.Put("/", agendas.PutAgenda)       // PUT /agendas/{id}
 			r.Delete("/", agendas.DeleteAgenda) // DELETE /agendas/{id}
 		})
 	})
