@@ -37,7 +37,7 @@ func DeleteAgenda(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deletedAgenda, err := agendas.DeleteAgendaById(id)
+	err = agendas.DeleteAgendaById(id)
 	if err != nil {
 		body, status := helpers.RespondError(err)
 		w.WriteHeader(status)
@@ -47,7 +47,5 @@ func DeleteAgenda(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	body, _ := json.Marshal(deletedAgenda)
-	_, _ = w.Write(body)
+	w.WriteHeader(http.StatusNoContent)
 }

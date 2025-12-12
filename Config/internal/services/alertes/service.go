@@ -41,21 +41,21 @@ func GetalerteById(id uuid.UUID) (*models.Alerte, error) {
 	return alerte, err
 }
 
-func DeleteAlerteById(id uuid.UUID) (*models.Alerte, error) {
-	alerte, err := repository.DeleteAlerteById(id)
+func DeleteAlerteById(id uuid.UUID) error {
+	err := repository.DeleteAlerteById(id)
 	if err != nil {
 		if err.Error() == sql.ErrNoRows.Error() {
-			return nil, &models.ErrorNotFound{
+			return &models.ErrorNotFound{
 				Message: "alerte not found",
 			}
 		}
 		logrus.Errorf("error deleting alerte %s : %s", id.String(), err.Error())
-		return nil, &models.ErrorGeneric{
+		return &models.ErrorGeneric{
 			Message: fmt.Sprintf("Something went wrong while deleting alerte %s", id.String()),
 		}
 	}
 
-	return alerte, err
+	return err
 }
 
 func PostNewAlerte(agendaId uuid.UUID, email string) (*models.Alerte, error) {

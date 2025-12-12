@@ -1,0 +1,24 @@
+meta {
+  name: DELETE alertes by ID
+  type: http
+  seq: 1
+}
+
+delete {
+  url: http://localhost:8080/alertes/e6570e5f-c915-4eca-9529-05fe92ddf408
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "id": "550e8610-e29b-41d4-a716-446655440000",
+    "Email": "jacques.KOZIK@etu.uca.fr",
+    "AgendaId": "123e4567-e89b-12d3-a456-426614174000"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

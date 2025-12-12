@@ -2,6 +2,7 @@ package main
 
 import (
 	agendas "middleware/example/internal/controllers/agendas"
+	"middleware/example/internal/controllers/alertes"
 	"middleware/example/internal/helpers"
 	_ "middleware/example/internal/models"
 	"net/http"
@@ -20,6 +21,16 @@ func main() {
 			r.Use(agendas.Context)              // Use Context method to get agenda ID
 			r.Get("/", agendas.GetAgenda)       // GET /agendas/{id}
 			r.Delete("/", agendas.DeleteAgenda) // DELETE /agendas/{id}
+		})
+	})
+
+	r.Route("/alertes", func(r chi.Router) { // route /alertes
+		r.Get("/", alertes.GetAlertes)        // GET /agendas
+		r.Post("/", alertes.PostNewAlerte)    // POST /alertes
+		r.Route("/{id}", func(r chi.Router) { // route /alertes/{id}
+			r.Use(alertes.Context)              // Use Context method to get alertes ID
+			r.Get("/", alertes.GetAlerte)       // GET /alertes/{id}
+			r.Delete("/", alertes.DeleteAlerte) // DELETE /alertes/{id}
 		})
 	})
 

@@ -1,0 +1,16 @@
+meta {
+  name: GET alertes
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/alertes/
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

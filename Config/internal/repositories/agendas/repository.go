@@ -48,10 +48,10 @@ func GetAgendaById(id uuid.UUID) (*models.Agenda, error) {
 	return &agenda, err
 }
 
-func DeleteAgendaById(id uuid.UUID) (*models.Agenda, error) {
+func DeleteAgendaById(id uuid.UUID) error {
 	db, err := helpers.OpenDB()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	row := db.QueryRow("SELECT * FROM agendas WHERE id=?", id.String())
@@ -59,16 +59,16 @@ func DeleteAgendaById(id uuid.UUID) (*models.Agenda, error) {
 	err = row.Scan(&agenda.Id, &agenda.UcaId, &agenda.Name)
 	if err != nil {
 		helpers.CloseDB(db)
-		return nil, err
+		return err
 	}
 
 	_, err = db.Exec("DELETE FROM agendas WHERE id=?", id.String())
 	helpers.CloseDB(db)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &agenda, nil
+	return nil
 }
 
 func PostNewAgenda(id uuid.UUID, name string, ucaid uuid.UUID) (*models.Agenda, error) {

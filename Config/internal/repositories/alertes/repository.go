@@ -50,20 +50,18 @@ func GetAlerteById(id uuid.UUID) (*models.Alerte, error) {
 	return &alerte, err
 }
 
-func DeleteAlerteById(id uuid.UUID) (*models.Alerte, error) {
+func DeleteAlerteById(id uuid.UUID) error {
 	db, err := helpers.OpenDB()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	row := db.QueryRow("DELETE * FROM alertes WHERE id=?", id.String())
+	_, err = db.Exec("DELETE FROM alertes WHERE id=?", id.String())
 	helpers.CloseDB(db)
 
-	var alerte models.Alerte
-	err = row.Scan(&alerte.Id, &alerte.Email, &alerte.AgendaId)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &alerte, err
+	return err
 }
 func PostNewAlerte(agendaId uuid.UUID, email string) (*models.Alerte, error) {
 	db, err := helpers.OpenDB()

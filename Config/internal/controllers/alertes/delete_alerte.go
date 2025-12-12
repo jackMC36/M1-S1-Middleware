@@ -1,12 +1,10 @@
 package alertes
 
 import (
-	"encoding/json"
 	"middleware/example/internal/helpers"
 	"middleware/example/internal/services/alertes"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/gofrs/uuid"
 )
 
@@ -22,23 +20,10 @@ import (
 // @Router       /alertes/{id} [delete]
 
 func DeleteAlerte(w http.ResponseWriter, r *http.Request) {
-	idParam := chi.URLParam(r, "id")
-	if idParam == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		body, _ := json.Marshal(map[string]string{"error": "ID parameter is required"})
-		_, _ = w.Write(body)
-		return
-	}
+	ctx := r.Context()
+	alerteId, _ := ctx.Value("alerteId").(uuid.UUID)
 
-	id, err := uuid.FromString(idParam)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		body, _ := json.Marshal(map[string]string{"error": "Invalid ID format"})
-		_, _ = w.Write(body)
-		return
-	}
-
-	deletedAlerte, err := alertes.DeleteAlerteById(id)
+	err := alertes.DeleteAlerteById(alerteId)
 	if err != nil {
 		body, status := helpers.RespondError(err)
 		w.WriteHeader(status)
@@ -48,7 +33,5 @@ func DeleteAlerte(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	body, _ := json.Marshal(deletedAlerte)
-	_, _ = w.Write(body)
+	w.WriteHeader(http.StatusNoContent)
 }
