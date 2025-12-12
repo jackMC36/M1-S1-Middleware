@@ -20,7 +20,7 @@ func PostNewAgenda(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
-	agenda, err := agendas.PostNewAgenda(requestData.ID, requestData.Name, requestData.UCAID)
+	agenda, err := agendas.PostNewAgenda(requestData.Name, requestData.UCAID)
 	if err != nil {
 		body, status := helpers.RespondError(err)
 		w.WriteHeader(status)

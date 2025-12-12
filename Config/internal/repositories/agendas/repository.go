@@ -71,12 +71,14 @@ func DeleteAgendaById(id uuid.UUID) error {
 	return nil
 }
 
-func PostNewAgenda(id uuid.UUID, name string, ucaid uuid.UUID) (*models.Agenda, error) {
+func PostNewAgenda(name string, ucaid uuid.UUID) (*models.Agenda, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
 		return nil, err
 
 	}
+	id := uuid.Must(uuid.NewV4())
+
 	_, err = db.Exec("INSERT INTO agendas (id, ucaid, name) VALUES (?, ?, ?)", id.String(), ucaid.String(), name)
 	helpers.CloseDB(db)
 
@@ -92,20 +94,13 @@ func PostNewAgenda(id uuid.UUID, name string, ucaid uuid.UUID) (*models.Agenda, 
 	return agenda, nil
 }
 
-func ReplaceAgendaById(old_id uuid.UUID, new_id uuid.UUID, name string, ucaid uuid.UUID) (*models.Agenda, error) {
-	DeleteAgendaById(old_id)
-	agenda, err := PostNewAgenda(new_id, name, ucaid)
-	if err != nil {
-		return nil, err
-	}
-	return agenda, nil
-}
-
-func UpdateAgendaById(id uuid.UUID, name string, ucaid uuid.UUID) (*models.Agenda, error) {
+func UpdateAgendaById(name string, ucaid uuid.UUID) (*models.Agenda, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
 		return nil, err
 	}
+
+	id := uuid.Must(uuid.NewV4())
 
 	_, err = db.Exec("UPDATE agendas SET name = ?, ucaid = ? WHERE id = ?", name, ucaid.String(), id.String())
 	helpers.CloseDB(db)

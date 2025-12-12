@@ -52,18 +52,15 @@ func DeleteAgendaById(id uuid.UUID) error {
 	return nil
 }
 
-func PostNewAgenda(id uuid.UUID, name string, ucaid uuid.UUID) (*models.Agenda, error) {
-	agenda, err := repository.PostNewAgenda(id, name, ucaid)
+func PostNewAgenda(name string, ucaid uuid.UUID) (*models.Agenda, error) {
+	agenda, err := repository.PostNewAgenda(name, ucaid)
 	if err != nil {
 		if err.Error() == sql.ErrNoRows.Error() {
 			return nil, &models.ErrorNotFound{
 				Message: "agenda not found (sql.errNoRows)",
 			}
 		}
-		logrus.Errorf("services/agendas: error posting agenda %s : %s", id.String(), err.Error())
-		return nil, &models.ErrorGeneric{
-			Message: fmt.Sprintf("Something went wrong while posting agenda %s", id.String()),
-		}
+
 	}
 
 	return agenda, err
@@ -76,7 +73,7 @@ func UpdateAgendaById(id uuid.UUID, name string, ucaid uuid.UUID) (*models.Agend
 		}
 	}
 
-	agenda, err := repository.UpdateAgendaById(id, name, ucaid)
+	agenda, err := repository.UpdateAgendaById(name, ucaid)
 	if err != nil {
 		if err.Error() == sql.ErrNoRows.Error() {
 			return nil, &models.ErrorNotFound{
