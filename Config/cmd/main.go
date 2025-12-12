@@ -31,6 +31,7 @@ func main() {
 		r.Route("/{id}", func(r chi.Router) { // route /alertes/{id}
 			r.Use(alertes.Context)              // Use Context method to get alertes ID
 			r.Get("/", alertes.GetAlerte)       // GET /alertes/{id}
+			r.Put("/", alertes.PutAlerte)       // PUT /alertes/{id}
 			r.Delete("/", alertes.DeleteAlerte) // DELETE /alertes/{id}
 		})
 	})

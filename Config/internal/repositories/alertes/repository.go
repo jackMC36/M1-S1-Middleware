@@ -18,7 +18,6 @@ func GetAllAlertes() ([]models.Alerte, error) {
 		return nil, err
 	}
 
-	// parsing datas in object slice
 	alertes := []models.Alerte{}
 	for rows.Next() {
 		var data models.Alerte
@@ -28,7 +27,6 @@ func GetAllAlertes() ([]models.Alerte, error) {
 		}
 		alertes = append(alertes, data)
 	}
-	// don't forget to close rows
 	_ = rows.Close()
 
 	return alertes, err
@@ -85,4 +83,26 @@ func PostNewAlerte(agendaId uuid.UUID, email string) (*models.Alerte, error) {
 	}
 
 	return alerte, nil
+}
+
+func UpdateAlerteById(id uuid.UUID, email string, agendaId uuid.UUID) (*models.Alerte, error) {
+	db, err := helpers.OpenDB()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec("UPDATE alertes SET email = ?, agendaid = ? WHERE id = ?", email, agendaId.String(), id.String())
+	helpers.CloseDB(db)
+
+	if err != nil {
+		return nil, err
+	}
+
+	updatedAlerte := &models.Alerte{
+		Id:       &id,
+		Email:    email,
+		AgendaId: &agendaId,
+	}
+
+	return updatedAlerte, nil
 }

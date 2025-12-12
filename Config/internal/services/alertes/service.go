@@ -75,3 +75,26 @@ func PostNewAlerte(agendaId uuid.UUID, email string) (*models.Alerte, error) {
 
 	return alerte, nil
 }
+
+func UpdateAlerteById(id uuid.UUID, email string, agendaId uuid.UUID) (*models.Alerte, error) {
+	if email == "" {
+		return nil, &models.ErrorGeneric{
+			Message: "Email is required",
+		}
+	}
+
+	alerte, err := repository.UpdateAlerteById(id, email, agendaId)
+	if err != nil {
+		if err.Error() == sql.ErrNoRows.Error() {
+			return nil, &models.ErrorNotFound{
+				Message: "alerte not found",
+			}
+		}
+		logrus.Errorf("error updating alerte %s : %s", id.String(), err.Error())
+		return nil, &models.ErrorGeneric{
+			Message: fmt.Sprintf("Something went wrong while updating alerte %s", id.String()),
+		}
+	}
+
+	return alerte, nil
+}
