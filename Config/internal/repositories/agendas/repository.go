@@ -71,7 +71,7 @@ func DeleteAgendaById(id uuid.UUID) error {
 	return nil
 }
 
-func PostNewAgenda(name string, ucaid uuid.UUID) (*models.Agenda, error) {
+func PostNewAgenda(name string, ucaid string) (*models.Agenda, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func PostNewAgenda(name string, ucaid uuid.UUID) (*models.Agenda, error) {
 	}
 	id := uuid.Must(uuid.NewV4())
 
-	_, err = db.Exec("INSERT INTO agendas (id, ucaid, name) VALUES (?, ?, ?)", id.String(), ucaid.String(), name)
+	_, err = db.Exec("INSERT INTO agendas (id, ucaid, name) VALUES (?, ?, ?)", id.String(), ucaid, name)
 	helpers.CloseDB(db)
 
 	if err != nil {
@@ -89,12 +89,12 @@ func PostNewAgenda(name string, ucaid uuid.UUID) (*models.Agenda, error) {
 	agenda := &models.Agenda{
 		Id:    &id,
 		Name:  name,
-		UcaId: &ucaid,
+		UcaId: ucaid,
 	}
 	return agenda, nil
 }
 
-func UpdateAgendaById(name string, ucaid uuid.UUID) (*models.Agenda, error) {
+func UpdateAgendaById(name string, ucaid string) (*models.Agenda, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func UpdateAgendaById(name string, ucaid uuid.UUID) (*models.Agenda, error) {
 
 	id := uuid.Must(uuid.NewV4())
 
-	_, err = db.Exec("UPDATE agendas SET name = ?, ucaid = ? WHERE id = ?", name, ucaid.String(), id.String())
+	_, err = db.Exec("UPDATE agendas SET name = ?, ucaid = ? WHERE id = ?", name, ucaid, id.String())
 	helpers.CloseDB(db)
 
 	if err != nil {
@@ -112,7 +112,7 @@ func UpdateAgendaById(name string, ucaid uuid.UUID) (*models.Agenda, error) {
 	updatedAgenda := &models.Agenda{
 		Id:    &id,
 		Name:  name,
-		UcaId: &ucaid,
+		UcaId: ucaid,
 	}
 
 	return updatedAgenda, nil

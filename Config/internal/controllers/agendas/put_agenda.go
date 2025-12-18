@@ -41,8 +41,8 @@ func PutAgenda(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var requestData struct {
-		Name  string    `json:"name"`
-		UCAID uuid.UUID `json:"ucaid"`
+		Name  string `json:"name"`
+		UCAID string `json:"ucaid"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {

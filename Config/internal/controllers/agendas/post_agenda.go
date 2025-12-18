@@ -13,7 +13,7 @@ func PostNewAgenda(w http.ResponseWriter, r *http.Request) {
 	var requestData struct {
 		ID    uuid.UUID `json:"id"`
 		Name  string    `json:"name"`
-		UCAID uuid.UUID `json:"ucaid"`
+		UCAID string    `json:"ucaid"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {

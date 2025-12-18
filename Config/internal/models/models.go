@@ -7,7 +7,7 @@ import (
 type Agenda struct {
 	Id    *uuid.UUID `json:"id"`
 	Name  string     `json:"name"`
-	UcaId *uuid.UUID `json:"ucaid"`
+	UcaId string     `json:"ucaid"`
 }
 
 type Alerte struct {

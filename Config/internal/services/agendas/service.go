@@ -52,7 +52,7 @@ func DeleteAgendaById(id uuid.UUID) error {
 	return nil
 }
 
-func PostNewAgenda(name string, ucaid uuid.UUID) (*models.Agenda, error) {
+func PostNewAgenda(name string, ucaid string) (*models.Agenda, error) {
 	agenda, err := repository.PostNewAgenda(name, ucaid)
 	if err != nil {
 		if err.Error() == sql.ErrNoRows.Error() {
@@ -66,7 +66,7 @@ func PostNewAgenda(name string, ucaid uuid.UUID) (*models.Agenda, error) {
 	return agenda, err
 }
 
-func UpdateAgendaById(id uuid.UUID, name string, ucaid uuid.UUID) (*models.Agenda, error) {
+func UpdateAgendaById(id uuid.UUID, name string, ucaid string) (*models.Agenda, error) {
 	if name == "" {
 		return nil, &models.ErrorGeneric{
 			Message: "Name is required",
