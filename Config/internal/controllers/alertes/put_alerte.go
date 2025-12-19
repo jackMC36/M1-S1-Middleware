@@ -42,10 +42,10 @@ func PutAlerte(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse request body
 	var requestData struct {
+		Id       uuid.UUID `json:"id"`
 		Email    string    `json:"email"`
-		AgendaId uuid.UUID `json:"agendaid"`
+		AgendaId string    `json:"agendaid"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {

@@ -13,5 +13,5 @@ type Agenda struct {
 type Alerte struct {
 	Id       *uuid.UUID `json:"id"`
 	Email    string     `json:"email"`
-	AgendaId *uuid.UUID `json:"agendaid"`
+	AgendaId string     `json:"agendaid"`
 }

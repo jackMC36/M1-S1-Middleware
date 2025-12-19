@@ -58,7 +58,7 @@ func DeleteAlerteById(id uuid.UUID) error {
 	return err
 }
 
-func PostNewAlerte(agendaId uuid.UUID, email string) (*models.Alerte, error) {
+func PostNewAlerte(agendaId string, email string) (*models.Alerte, error) {
 	if email == "" {
 		return nil, &models.ErrorGeneric{
 			Message: "Email is required",
@@ -67,7 +67,7 @@ func PostNewAlerte(agendaId uuid.UUID, email string) (*models.Alerte, error) {
 
 	alerte, err := repository.PostNewAlerte(agendaId, email)
 	if err != nil {
-		logrus.Errorf("error creating alerte for agenda %s : %s", agendaId.String(), err.Error())
+		logrus.Errorf("error creating alerte for agenda %s : %s", agendaId, err.Error())
 		return nil, &models.ErrorGeneric{
 			Message: "Something went wrong while creating alerte",
 		}
@@ -76,7 +76,7 @@ func PostNewAlerte(agendaId uuid.UUID, email string) (*models.Alerte, error) {
 	return alerte, nil
 }
 
-func UpdateAlerteById(id uuid.UUID, email string, agendaId uuid.UUID) (*models.Alerte, error) {
+func UpdateAlerteById(id uuid.UUID, email string, agendaId string) (*models.Alerte, error) {
 	if email == "" {
 		return nil, &models.ErrorGeneric{
 			Message: "Email is required",
