@@ -61,7 +61,7 @@ func DeleteAlerteById(id uuid.UUID) error {
 	}
 	return err
 }
-func PostNewAlerte(agendaId uuid.UUID, email string) (*models.Alerte, error) {
+func PostNewAlerte(agendaId string, email string) (*models.Alerte, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func PostNewAlerte(agendaId uuid.UUID, email string) (*models.Alerte, error) {
 	alerteId := uuid.Must(uuid.NewV4())
 
 	_, err = db.Exec("INSERT INTO alertes (id, email, agendaid) VALUES (?, ?, ?)",
-		alerteId.String(), email, agendaId.String())
+		alerteId.String(), email, agendaId)
 	helpers.CloseDB(db)
 
 	if err != nil {
@@ -79,19 +79,19 @@ func PostNewAlerte(agendaId uuid.UUID, email string) (*models.Alerte, error) {
 	alerte := &models.Alerte{
 		Id:       &alerteId,
 		Email:    email,
-		AgendaId: &agendaId,
+		AgendaId: agendaId,
 	}
 
 	return alerte, nil
 }
 
-func UpdateAlerteById(id uuid.UUID, email string, agendaId uuid.UUID) (*models.Alerte, error) {
+func UpdateAlerteById(id uuid.UUID, email string, agendaId string) (*models.Alerte, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = db.Exec("UPDATE alertes SET email = ?, agendaid = ? WHERE id = ?", email, agendaId.String(), id.String())
+	_, err = db.Exec("UPDATE alertes SET email = ?, agendaid = ? WHERE id = ?", email, agendaId, id.String())
 	helpers.CloseDB(db)
 
 	if err != nil {
@@ -101,7 +101,7 @@ func UpdateAlerteById(id uuid.UUID, email string, agendaId uuid.UUID) (*models.A
 	updatedAlerte := &models.Alerte{
 		Id:       &id,
 		Email:    email,
-		AgendaId: &agendaId,
+		AgendaId: agendaId,
 	}
 
 	return updatedAlerte, nil
