@@ -30,5 +30,4 @@ func PostNewAlerte(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	body, _ := json.Marshal(alerte)
 	_, _ = w.Write(body)
-	return
 }

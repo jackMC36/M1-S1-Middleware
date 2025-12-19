@@ -35,5 +35,4 @@ func GetAlerte(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	body, _ := json.Marshal(alerte)
 	_, _ = w.Write(body)
-	return
 }
