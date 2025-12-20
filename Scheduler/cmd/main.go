@@ -13,14 +13,25 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/nats-io/nats.go"
 	"github.com/zhashkevych/scheduler"
+
+	"middleware/example/internal/models"
+	"github.com/joho/godotenv"
+
 )
 
 var jsc nats.JetStreamContext
 var nc *nats.Conn
 
 func main() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Error loading .env file: %v", err)
+	}
+
 	initStream()
 
 	ctx := context.Background()
@@ -36,13 +47,60 @@ func main() {
 }
 
 func funcTest(ctx context.Context) {
-	err := fetchAndProcessCalendar()
-	if err != nil {
-		log.Printf("Error in calendar job: %v", err)
-	}
+    configURL := os.Getenv("CONFIG_API_BASE_URL") 
+    if configURL == "" {
+        log.Printf("CONFIG_API_BASE_URL is not set")
+        return
+    }
+
+    agendas, err := fetchAgendas(configURL)
+    if err != nil {
+        log.Printf("Error fetching agendas: %v", err)
+        return
+    }
+
+    for _, a := range agendas {
+        if a.Id == nil {
+            log.Printf("Skipping agenda %q: id is nil", a.Name)
+            continue
+        }
+        if strings.TrimSpace(a.UcaId) == "" {
+            log.Printf("Skipping agenda %q (%s): ucaid is empty", a.Name, a.Id.String())
+            continue
+        }
+
+        // This is the next step: fetch calendar for each agenda
+        if err := fetchAndProcessCalendar(a.UcaId, *a.Id); err != nil {
+            log.Printf("Error processing agenda %q (ucaid=%s): %v", a.Name, a.UcaId, err)
+        }
+    }
 }
 
-func fetchAndProcessCalendar() error {
+
+func fetchAgendas(configAPIBaseURL string) ([]models.Agenda, error) {
+    url := strings.TrimRight(configAPIBaseURL, "/") + "/agendas/"
+
+    client := &http.Client{Timeout: 10 * time.Second}
+    resp, err := client.Get(url)
+    if err != nil {
+        return nil, err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+        b, _ := io.ReadAll(resp.Body)
+        return nil, fmt.Errorf("GET %s -> %d: %s", url, resp.StatusCode, string(b))
+    }
+
+	var agendas []models.Agenda
+    if err := json.NewDecoder(resp.Body).Decode(&agendas); err != nil {
+        return nil, err
+    }
+    return agendas, nil
+}
+
+
+func fetchAndProcessCalendar(ucaID string, agendaID uuid.UUID) error {
 	rawDate := "20251228T152000Z"
 
 	// 2006 = année ; 01 = mois ; 02 = jour ; 15 = heure ; 04 = minute ; 05 = seconde
@@ -56,7 +114,8 @@ func fetchAndProcessCalendar() error {
 
 	fmt.Println(d)
 
-	resp, err := http.Get("https://edt.uca.fr/jsp/custom/modules/plannings/anonymous_cal.jsp?resources=62090&projectId=3&calType=ical&nbWeeks=8&displayConfigId=128")
+	url := fmt.Sprintf("https://edt.uca.fr/jsp/custom/modules/plannings/anonymous_cal.jsp?resources=%s&projectId=3&calType=ical&nbWeeks=8&displayConfigId=128", ucaID)
+	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Println(err)
 		return err
