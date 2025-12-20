@@ -19,7 +19,7 @@ func EventConsumer() (*jetstream.Consumer, error) {
     ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
     defer cancel()
 
-    stream, err := js.Stream(ctx, "EventsStream")
+    stream, err := js.Stream(ctx, "EVENTS")
     if err != nil {
         return nil, err
     }
@@ -31,6 +31,7 @@ func EventConsumer() (*jetstream.Consumer, error) {
             Durable:     "TimeTable_Consumer",
             Name:        "TimeTable_Consumer",
             Description: "Consumes timetable update events",
+            FilterSubject: "Scheduler.Events",    
         })
         if err != nil {
             return nil, err

@@ -133,11 +133,37 @@ func fetchAndProcessCalendar(ucaID string, agendaID uuid.UUID) error {
 	for _, line := range lines {
 		if strings.HasPrefix(line, "BEGIN:VEVENT") {
 			currentlyParsing = true
+			tmpObj = map[string]interface{}{}
 		} else {
 			if currentlyParsing {
 				if strings.HasPrefix(line, "END:VEVENT") {
-					fmt.Println(tmpObj)
-					err := publishEvent(tmpObj)
+					uid, _ := tmpObj["uid"].(string)
+					summary, _ := tmpObj["summary"].(string)
+					desc, _ := tmpObj["description"].(string)
+					loc, _ := tmpObj["location"].(string)
+
+					start, _ := tmpObj["start"].(time.Time)
+					end, _ := tmpObj["end"].(time.Time)
+
+					var lastUpdate *time.Time
+					if t, ok := tmpObj["lastModified"].(time.Time); ok {
+						lastUpdate = &t
+					}
+
+					ev := models.Event{
+						UID:         uid,
+						Name:        summary,
+						Description: desc,
+						Location:    loc,
+						Start:       start,
+						End:         end,
+						LastUpdate:  lastUpdate,
+					}
+   					payload := models.SchedulerPayload{
+        				AgendaID: agendaID,
+       					Event:    ev,
+    				}				
+					err := publishEvent(payload)
 					if err != nil {
 						log.Printf("Error publishing event: %v", err)
 					}
@@ -151,6 +177,21 @@ func fetchAndProcessCalendar(ucaID string, agendaID uuid.UUID) error {
 					if strings.HasPrefix(line, "DTSTART:") {
 						tmpObj["start"], _ = time.Parse("20060102T150405Z", strings.Replace(strings.Replace(line, "DTSTART:", "", 1), "\r", "", 1))
 					}
+					if strings.HasPrefix(line, "DTEND:") {
+						tmpObj["end"], _ = time.Parse("20060102T150405Z", strings.Replace(strings.Replace(line, "DTEND:", "", 1), "\r", "", 1))
+					}
+					if strings.HasPrefix(line, "DESCRIPTION:") {
+						tmpObj["description"] = strings.Replace(strings.Replace(line, "DESCRIPTION:", "", 1), "\r", "", 1)
+					}
+					if strings.HasPrefix(line, "UID:") {
+						tmpObj["uid"] = strings.Replace(strings.Replace(line, "UID:", "", 1), "\r", "", 1)
+					}
+					if strings.HasPrefix(line, "LOCATION:") {
+						tmpObj["location"] = strings.Replace(strings.Replace(line, "LOCATION:", "", 1), "\r", "", 1)
+					}
+					if strings.HasPrefix(line, "LAST-MODIFIED:") {
+						tmpObj["lastModified"], _ = time.Parse("20060102T150405Z", strings.Replace(strings.Replace(line, "LAST-MODIFIED:", "", 1), "\r", "", 1))
+					}
 				}
 			} else {
 				continue
@@ -162,13 +203,13 @@ func fetchAndProcessCalendar(ucaID string, agendaID uuid.UUID) error {
 	return nil
 }
 
-func publishEvent(event map[string]interface{}) error {
-	messageBytes, err := json.Marshal(event)
+func publishEvent(payload models.SchedulerPayload) error {
+	messageBytes, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
 
-	pubAckFuture, err := jsc.PublishAsync("EVENTS.create", messageBytes)
+	pubAckFuture, err := jsc.PublishAsync("Scheduler.Events", messageBytes)
 	if err != nil {
 		return err
 	}
@@ -196,7 +237,7 @@ func initStream() {
 
 	_, err = jsc.AddStream(&nats.StreamConfig{
 		Name:     "EVENTS",             // nom du stream
-		Subjects: []string{"EVENTS.>"}, // tous les sujets sont sous le format "EVENTS.*"
+		Subjects: []string{"Scheduler.>"},
 	})
 	if err != nil {
 		log.Fatal(err)
