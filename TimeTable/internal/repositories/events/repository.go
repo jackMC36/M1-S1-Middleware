@@ -174,3 +174,169 @@ func GetEventById(id uuid.UUID) (*models.Event, error) {
 
 	return &ev, nil
 }
+
+// GetEventByUID retrieves an event by its UID.
+func GetEventByUID(uid string) (*models.Event, error) {
+    db, err := helpers.OpenDB()
+    if err != nil {
+        return nil, err
+    }
+
+	
+    defer helpers.CloseDB(db)
+
+    const q = `
+        SELECT e.id, e.uid, e.description, e.name, e.start, e."end", e.location, e.last_update, GROUP_CONCAT(ea.agenda_id) AS agenda_ids
+        FROM events e
+        LEFT JOIN events_agendas ea ON ea.event_id = e.id
+        WHERE e.uid = ?
+        GROUP BY e.id, e.uid, e.description, e.name, e.start, e."end", e.location, e.last_update;
+    `
+
+    row := db.QueryRow(q, uid)
+	ev, err := scanEvent(row)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ev, nil
+}
+
+func UpdateEventByUID(UID string, agendaIDs []uuid.UUID, description string, name string, Start time.Time, End time.Time, location string, LastUpdate *time.Time) (*models.Event, error) {
+	db, err := helpers.OpenDB()
+	if err != nil {
+		return nil, err
+	}
+
+	q := `
+		UPDATE events
+		SET description = ?, name = ?, start = ?, "end" = ?, location = ?, last_update = ?
+		WHERE uid = ?
+		`
+
+	_, err = db.Exec(
+		q,
+		description,
+		name,
+		Start.Format(time.RFC3339),
+		End.Format(time.RFC3339),
+		location,
+		LastUpdate,
+		UID,
+	)
+	helpers.CloseDB(db)
+
+	if err != nil {
+		return nil, err
+	}
+
+	updatedEvent := &models.Event{
+		AgendaIDs: agendaIDs,
+		Description: description,
+		Name:  name,
+		Start: Start,
+		End: End,
+		Location: location,
+		LastUpdate: LastUpdate,
+		UID: UID,
+	}
+
+	return updatedEvent, nil
+}
+
+func EventAgendasLink(eventID uuid.UUID, agendaIDs []uuid.UUID) error {
+	db, err := helpers.OpenDB()
+	if err != nil {
+		return err
+	}
+	defer helpers.CloseDB(db)
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	const qDelete = `
+		DELETE FROM events_agendas
+		WHERE event_id = ?;
+	`
+
+	_, err = tx.Exec(qDelete, eventID.String())
+	if err != nil {
+		return err
+	}	
+	
+	const qInsert = `
+		INSERT INTO events_agendas (event_id, agenda_id)
+		VALUES (?, ?);
+	`
+
+	for _, agendaID := range agendaIDs {
+		_, err = tx.Exec(qInsert, eventID.String(), agendaID.String())
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
+}
+
+func InsertEvent(event models.Event) error {
+	db, err := helpers.OpenDB()
+	if err != nil {
+		return err
+	}
+	defer helpers.CloseDB(db)
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	const insertEventQ = `
+		INSERT INTO events (id, uid, description, name, start, "end", location, last_update)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+	`
+	if event.ID == uuid.Nil {
+		event.ID = uuid.Must(uuid.NewV4())
+	}
+
+	_, err = tx.Exec(
+		insertEventQ,
+		event.ID.String(),
+		event.UID,
+		event.Description,
+		event.Name,
+		event.Start.Format(time.RFC3339),
+		event.End.Format(time.RFC3339),
+		event.Location,
+		event.LastUpdate, 
+	)
+	if err != nil {
+		return err
+	}
+
+	const insertLinkQ = `
+		INSERT OR IGNORE INTO events_agendas (event_id, agenda_id)
+		VALUES (?, ?);
+	`
+	for _, agendaID := range event.AgendaIDs {
+		_, err = tx.Exec(insertLinkQ, event.ID.String(), agendaID.String())
+		if err != nil {
+			return err
+		}
+	}
+
+	return tx.Commit()
+}

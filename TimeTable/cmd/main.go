@@ -6,6 +6,8 @@ import (
 	_ "middleware/example/internal/models"
 	"net/http"
 
+	events_consumers "middleware/example/internal/consumers/events"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
 )
@@ -14,14 +16,34 @@ func main() {
 	r := chi.NewRouter()
 		 
 	r.Route("/events", func(r chi.Router) {// route /events
+		    r.Get("/", events.GetEvents)   // GET /events?agenda_id=...
 		 r.Route("/{id}", func(r chi.Router) { // route /events/{id}
 			 r.Use(events.Context) 	  // Use Context method to get event ID
 			 r.Get("/", events.Getevent) // GET /events/{id}
 		 })
 	 })
 
-	logrus.Info("[INFO] Web server started. Now listening on *:8081")
-	logrus.Fatalln(http.ListenAndServe(":8081", r))
+	if err := helpers.InitNats(); err != nil {
+        logrus.Fatal(err)
+    }
+
+	if err := helpers.EnsureStreams(); err != nil {
+		logrus.Fatal(err)
+	}
+
+	go func() {
+        consumer, err := events_consumers.EventConsumer()
+        if err != nil {
+            logrus.Warnf("error during nats consumer creation : %v", err)
+            return
+        }
+        if err := events_consumers.Consume(*consumer); err != nil {
+            logrus.Warnf("error during nats consume : %v", err)
+        }
+    }() 
+
+	logrus.Info("[INFO] Web server started. Now listening on *:8082")
+	logrus.Fatalln(http.ListenAndServe(":8082", r))
 }
 
 func init() {
