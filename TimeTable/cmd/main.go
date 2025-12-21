@@ -42,8 +42,8 @@ func main() {
         }
     }() 
 
-	logrus.Info("[INFO] Web server started. Now listening on *:8082")
-	logrus.Fatalln(http.ListenAndServe(":8082", r))
+	logrus.Info("[INFO] Web server started. Now listening on *:8081")
+	logrus.Fatalln(http.ListenAndServe(":8081", r))
 }
 
 func init() {

@@ -15,7 +15,6 @@ type scanner interface {
 	Scan(dest ...any) error
 }
 
-// splitUUIDsCSV convertit "AgendaId1,AgendaId2,AgendaId3" -> []uuid.UUID (tolère vide)
 func splitUUIDsCSV(csv string) ([]uuid.UUID, error) {
 	csv = strings.TrimSpace(csv)
 	if csv == "" {
@@ -56,7 +55,6 @@ func parseNullableRFC3339(s string) (*time.Time, error) {
 	return &t, nil
 }
 
-// scanEvent scanne une ligne SQL et la convertit en models.Event.
 func scanEvent(s scanner) (models.Event, error) {
 	var (
 		idStr, uid, startStr, endStr string
@@ -108,7 +106,6 @@ func scanEvent(s scanner) (models.Event, error) {
 }
 
 
-// GetEventsByAgenda retourne tous les évènements liés à un agenda donné.
 func GetEventsByAgenda(agendaID uuid.UUID) ([]models.Event, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
@@ -148,7 +145,6 @@ func GetEventsByAgenda(agendaID uuid.UUID) ([]models.Event, error) {
 	return out, nil
 }
 
-// GetEventById returns a single event (including its agenda IDs) by event id.
 func GetEventById(id uuid.UUID) (*models.Event, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
@@ -175,7 +171,6 @@ func GetEventById(id uuid.UUID) (*models.Event, error) {
 	return &ev, nil
 }
 
-// GetEventByUID retrieves an event by its UID.
 func GetEventByUID(uid string) (*models.Event, error) {
     db, err := helpers.OpenDB()
     if err != nil {
@@ -208,6 +203,13 @@ func UpdateEventByUID(UID string, agendaIDs []uuid.UUID, description string, nam
 		return nil, err
 	}
 
+	var lastUpd any
+    if LastUpdate == nil {
+        lastUpd = nil
+    } else {
+        lastUpd = LastUpdate.UTC().Format(time.RFC3339)
+    }
+
 	q := `
 		UPDATE events
 		SET description = ?, name = ?, start = ?, "end" = ?, location = ?, last_update = ?
@@ -218,10 +220,10 @@ func UpdateEventByUID(UID string, agendaIDs []uuid.UUID, description string, nam
 		q,
 		description,
 		name,
-		Start.Format(time.RFC3339),
-		End.Format(time.RFC3339),
+		Start.UTC().Format(time.RFC3339),
+		End.UTC().Format(time.RFC3339),
 		location,
-		LastUpdate,
+		lastUpd,
 		UID,
 	)
 	helpers.CloseDB(db)
@@ -312,16 +314,23 @@ func InsertEvent(event models.Event) error {
 		event.ID = uuid.Must(uuid.NewV4())
 	}
 
+	var lastUpd any
+    if event.LastUpdate == nil {
+        lastUpd = nil
+    } else {
+        lastUpd = event.LastUpdate.UTC().Format(time.RFC3339)
+    }
+
 	_, err = tx.Exec(
 		insertEventQ,
 		event.ID.String(),
 		event.UID,
 		event.Description,
 		event.Name,
-		event.Start.Format(time.RFC3339),
-		event.End.Format(time.RFC3339),
+		event.Start.UTC().Format(time.RFC3339),
+		event.End.UTC().Format(time.RFC3339),
 		event.Location,
-		event.LastUpdate, 
+		lastUpd,
 	)
 	if err != nil {
 		return err

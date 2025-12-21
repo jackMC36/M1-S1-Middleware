@@ -15,7 +15,10 @@ import (
 )
 
 func EventConsumer() (*jetstream.Consumer, error) {
-    js, _ := jetstream.New(helpers.NatsConn)
+    js, err := jetstream.New(helpers.NatsConn)
+    if err != nil {
+        return nil, err
+    }    
     ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
     defer cancel()
 
@@ -50,7 +53,7 @@ func HandlePullMessage(js jetstream.JetStream, payload models.SchedulerPayload) 
     existingEvent, err := repository.GetEventByUID(payload.Event.UID)
     if err != nil {
         if err == sql.ErrNoRows {
-            // New event
+            // New event: store it, but DO NOT notify
             ev := payload.Event
             if ev.ID == uuid.Nil {
                 ev.ID = uuid.Must(uuid.NewV4())
@@ -60,17 +63,20 @@ func HandlePullMessage(js jetstream.JetStream, payload models.SchedulerPayload) 
             if err := repository.InsertEvent(ev); err != nil {
                 return err
             }
-
-            change := models.EventChange{
-                Before: nil,
-                After:  ev,
-            }
-            return publishEventChange(js, "Events.Changed", change)
+            return nil
         }
         return err
     }
 
     before := *existingEvent
+    after := payload.Event
+    after.ID = existingEvent.ID
+    after.AgendaIDs = agendaIDs
+
+    changedFields := eventDiff(before, after)
+    if len(changedFields) == 0 {
+        return nil
+    }
 
     _, err = repository.UpdateEventByUID(
         payload.Event.UID,
@@ -89,12 +95,6 @@ func HandlePullMessage(js jetstream.JetStream, payload models.SchedulerPayload) 
     if err := repository.EventAgendasLink(existingEvent.ID, agendaIDs); err != nil {
         return err
     }
-
-    // After
-    after := payload.Event
-    after.ID = existingEvent.ID
-    after.AgendaIDs = agendaIDs
-
     change := models.EventChange{
         Before: &before,
         After:  after,
@@ -112,8 +112,27 @@ func publishEventChange(js jetstream.JetStream, subject string, change models.Ev
 	return err
 }
 
+func eventDiff(before models.Event, after models.Event) []string {
+    changed := []string{}
 
+    if before.Name != after.Name {
+        changed = append(changed, "name")
+    }
+    if before.Description != after.Description {
+        changed = append(changed, "description")
+    }
+    if before.Location != after.Location {
+        changed = append(changed, "location")
+    }
+    if !before.Start.UTC().Equal(after.Start.UTC()) {
+        changed = append(changed, "start")
+    }
+    if !before.End.UTC().Equal(after.End.UTC()) {
+        changed = append(changed, "end")
+    }
 
+    return changed
+}
 
 func Consume(consumer jetstream.Consumer) error {
     js, err := jetstream.New(helpers.NatsConn)
@@ -131,7 +150,7 @@ func Consume(consumer jetstream.Consumer) error {
 
         if err := HandlePullMessage(js, payload); err != nil {
             logrus.Errorf("handle message failed: %v", err)
-            _ = msg.Ack()
+            _ = msg.Nak()
             return
         }
 
