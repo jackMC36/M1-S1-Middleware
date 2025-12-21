@@ -73,8 +73,8 @@ func HandlePullMessage(js jetstream.JetStream, payload models.SchedulerPayload) 
     after.ID = existingEvent.ID
     after.AgendaIDs = agendaIDs
 
-    changedFields := eventDiff(before, after)
-    if len(changedFields) == 0 {
+    changes := eventDiff(before, after)
+    if len(changes) == 0 {
         return nil
     }
 
@@ -95,16 +95,20 @@ func HandlePullMessage(js jetstream.JetStream, payload models.SchedulerPayload) 
     if err := repository.EventAgendasLink(existingEvent.ID, agendaIDs); err != nil {
         return err
     }
-    change := models.EventChange{
-        Before: &before,
-        After:  after,
+    alert := models.TimetableAlert{
+        AgendaID: payload.AgendaID,
+        UID:      after.UID,
+        Changes:  changes,
+        Before:   &before,
+        After:    after,
     }
-    return publishEventChange(js, "Events.Changed", change)
+
+    return publishTimetableAlert(js, "Events.Changed", alert)
 }
 
 
-func publishEventChange(js jetstream.JetStream, subject string, change models.EventChange) error {
-	data, err := json.Marshal(change)
+func publishTimetableAlert(js jetstream.JetStream, subject string, alert models.TimetableAlert) error {
+	data, err := json.Marshal(alert)
 	if err != nil {
 		return err
 	}
@@ -112,23 +116,43 @@ func publishEventChange(js jetstream.JetStream, subject string, change models.Ev
 	return err
 }
 
-func eventDiff(before models.Event, after models.Event) []string {
-    changed := []string{}
+func eventDiff(before models.Event, after models.Event) []models.FieldChange {
+    changed := []models.FieldChange{}
 
     if before.Name != after.Name {
-        changed = append(changed, "name")
+        changed = append(changed, models.FieldChange{
+            Field: "name",
+            Before: before.Name,
+            After: after.Name,
+        })
     }
     if before.Description != after.Description {
-        changed = append(changed, "description")
+        changed = append(changed, models.FieldChange{
+            Field: "description",
+            Before: before.Description,
+            After: after.Description,
+        })
     }
     if before.Location != after.Location {
-        changed = append(changed, "location")
+        changed = append(changed, models.FieldChange{
+            Field: "location",
+            Before: before.Location,
+            After: after.Location,
+        })      
     }
     if !before.Start.UTC().Equal(after.Start.UTC()) {
-        changed = append(changed, "start")
+        changed = append(changed, models.FieldChange{
+            Field:  "start",
+            Before: before.Start.UTC().Format(time.RFC3339),
+            After:  after.Start.UTC().Format(time.RFC3339),
+        })
     }
     if !before.End.UTC().Equal(after.End.UTC()) {
-        changed = append(changed, "end")
+        changed = append(changed, models.FieldChange{
+            Field:  "end",
+            Before: before.End.UTC().Format(time.RFC3339),
+            After:  after.End.UTC().Format(time.RFC3339),
+        })
     }
 
     return changed
