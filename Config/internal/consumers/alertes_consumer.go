@@ -2,11 +2,13 @@ package consumers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"middleware/example/internal/helpers"
 	"middleware/example/internal/services"
+	alertesService "middleware/example/internal/services/alertes"
 
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/sirupsen/logrus"
@@ -21,7 +23,7 @@ func AlertConsumer() (*jetstream.Consumer, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	stream, err := js.Stream(ctx, "Events.Changed")
+	stream, err := js.Stream(ctx, "EVENTS")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get stream: %w", err)
 	}
@@ -41,15 +43,29 @@ func Consume(consumer jetstream.Consumer) (err error) {
 	cc, err := consumer.Consume(func(msg jetstream.Msg) {
 		logrus.Infof("Received event on %s: %s", msg.Subject(), string(msg.Data()))
 
-		err := services.SendMail(
-			"jacques.KOZIK@etu.uca.fr",
-			"Alert: "+msg.Subject(),
-			string(msg.Data()),
-		)
-		if err != nil {
-			logrus.Warnf("Failed to send email alert: %v", err)
+		// Parse payload to get agenda id
+		var payload struct {
+			AgendaID string `json:"agendaId"`
+		}
+		if err := json.Unmarshal(msg.Data(), &payload); err != nil {
+			logrus.Warnf("Failed to unmarshal payload: %v", err)
 		} else {
-			logrus.Info("Email alert sent successfully")
+			// fetch alertes for this agenda
+			alertes, svcErr := alertesService.GetAlertesByAgendaId(payload.AgendaID)
+			if svcErr != nil {
+				logrus.Warnf("Failed to fetch alertes for agenda %s: %v", payload.AgendaID, svcErr)
+			} else {
+				for _, a := range alertes {
+					if a.Email == "" {
+						continue
+					}
+					if err := services.SendMail(a.Email, "Alert: "+msg.Subject(), string(msg.Data())); err != nil {
+						logrus.Warnf("Failed to send email to %s: %v", a.Email, err)
+					} else {
+						logrus.Infof("Email sent to %s", a.Email)
+					}
+				}
+			}
 		}
 
 		if err := msg.Ack(); err != nil {

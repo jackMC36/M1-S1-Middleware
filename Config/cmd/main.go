@@ -7,6 +7,8 @@ import (
 	_ "middleware/example/internal/models"
 	"net/http"
 
+	alertes_consumers "middleware/example/internal/consumers"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/sirupsen/logrus"
 )
@@ -65,4 +67,22 @@ func init() {
 		}
 	}
 	helpers.CloseDB(db)
+}
+
+func sendAlertes() {
+	err := helpers.InitNats()
+	if err != nil {
+		logrus.Fatalf("failed to connect to NATS: %v", err)
+	}
+	defer helpers.CloseNats()
+
+	consumer, err := alertes_consumers.AlertConsumer()
+	if err != nil {
+		logrus.Warnf("error during nats consumer creation : %v", err)
+	} else {
+		err = alertes_consumers.Consume(*consumer)
+		if err != nil {
+			logrus.Warnf("error during nats consume : %v", err)
+		}
+	}
 }

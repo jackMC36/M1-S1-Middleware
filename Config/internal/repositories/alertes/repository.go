@@ -32,6 +32,31 @@ func GetAllAlertes() ([]models.Alerte, error) {
 	return alertes, err
 }
 
+func GetAlertesByAgendaId(agendaId string) ([]models.Alerte, error) {
+	db, err := helpers.OpenDB()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := db.Query("SELECT * FROM alertes WHERE agendaid = ?", agendaId)
+	helpers.CloseDB(db)
+	if err != nil {
+		return nil, err
+	}
+
+	alertes := []models.Alerte{}
+	for rows.Next() {
+		var data models.Alerte
+		err = rows.Scan(&data.Id, &data.Email, &data.AgendaId)
+		if err != nil {
+			return nil, err
+		}
+		alertes = append(alertes, data)
+	}
+	_ = rows.Close()
+
+	return alertes, nil
+}
+
 func GetAlerteById(id uuid.UUID) (*models.Alerte, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {

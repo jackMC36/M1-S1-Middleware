@@ -98,3 +98,14 @@ func UpdateAlerteById(id uuid.UUID, email string, agendaId string) (*models.Aler
 
 	return alerte, nil
 }
+
+func GetAlertesByAgendaId(agendaId string) ([]models.Alerte, error) {
+	alertes, err := repository.GetAlertesByAgendaId(agendaId)
+	if err != nil {
+		logrus.Errorf("error retrieving alertes for agenda %s : %s", agendaId, err.Error())
+		return nil, &models.ErrorGeneric{
+			Message: "Something went wrong while retrieving alertes for agenda",
+		}
+	}
+	return alertes, nil
+}
