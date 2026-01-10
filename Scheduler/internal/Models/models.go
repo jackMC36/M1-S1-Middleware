@@ -6,15 +6,21 @@ import (
 )
 
 type Event struct {
-	ID 			uuid.UUID 	`json:"id,omitempty"`
+	ID          uuid.UUID   `json:"id"`
 	AgendaIDs   []uuid.UUID `json:"agendaIds"`            // tableau d’UUIDs
 	UID         string      `json:"uid"`
 	Description string      `json:"description"`
-	Name        string      `json:"name"` 				  //Summary
+	Name        string      `json:"name"` //Summary
 	Start       time.Time   `json:"start"`                // RFC3339 avec offset (ex: +01:00)
 	End         time.Time   `json:"end"`
 	Location    string      `json:"location"`
 	LastUpdate  *time.Time  `json:"lastUpdate,omitempty"` // nullable dans l’iCal
+}
+
+type Agenda struct {
+    Id    *uuid.UUID `json:"id"`
+    UcaId string     `json:"ucaid"`
+    Name  string     `json:"name"`
 }
 
 type SchedulerPayload struct {
@@ -22,16 +28,3 @@ type SchedulerPayload struct {
 	Event    Event     	`json:"event"`
 }
 
-type FieldChange struct {
-    Field  string `json:"field"`           		
-    Before string `json:"before,omitempty"`	    
-    After  string `json:"after,omitempty"`
-}
-
-type TimetableAlert struct {
-    AgendaID uuid.UUID    `json:"agendaId"`
-    UID      string       `json:"uid"`
-    Changes  []FieldChange `json:"changes"`
-    After    Event        `json:"after"`
-    Before   *Event       `json:"before,omitempty"`
-}
