@@ -2,6 +2,7 @@ package main
 
 import (
 	events "middleware/example/internal/controllers/events"
+	agendas "middleware/example/internal/controllers/agendas"
 	"middleware/example/internal/helpers"
 	_ "middleware/example/internal/models"
 	"net/http"
@@ -14,9 +15,15 @@ import (
 
 func main() {
 	r := chi.NewRouter()
+
+	r.Route("/agendas", func(r chi.Router) { // route /agendas
+  		r.Route("/{id}/events", func(r chi.Router) { // route /agendas/{id}/events
+    		r.Use(agendas.Context)
+    		r.Get("/", events.GetEvents)
+		})
+	})
 		 
 	r.Route("/events", func(r chi.Router) {// route /events
-		    r.Get("/", events.GetEvents)   // GET /events?agenda_id=...
 		 r.Route("/{id}", func(r chi.Router) { // route /events/{id}
 			 r.Use(events.Context) 	  // Use Context method to get event ID
 			 r.Get("/", events.Getevent) // GET /events/{id}
