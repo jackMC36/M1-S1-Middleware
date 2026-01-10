@@ -40,6 +40,17 @@ func main() {
 
 	logrus.Info("[INFO] Web server started. Now listening on *:8080")
 	logrus.Fatalln(http.ListenAndServe(":8080", r))
+
+	go func() {
+		consumer, err := alertes_consumers.AlertConsumer()
+		if err != nil {
+			logrus.Warnf("error during nats consumer creation : %v", err)
+			return
+		}
+		if err := alertes_consumers.Consume(*consumer); err != nil {
+			logrus.Warnf("error during nats consume : %v", err)
+		}
+	}()
 }
 
 func init() {
@@ -67,22 +78,4 @@ func init() {
 		}
 	}
 	helpers.CloseDB(db)
-}
-
-func sendAlertes() {
-	err := helpers.InitNats()
-	if err != nil {
-		logrus.Fatalf("failed to connect to NATS: %v", err)
-	}
-	defer helpers.CloseNats()
-
-	consumer, err := alertes_consumers.AlertConsumer()
-	if err != nil {
-		logrus.Warnf("error during nats consumer creation : %v", err)
-	} else {
-		err = alertes_consumers.Consume(*consumer)
-		if err != nil {
-			logrus.Warnf("error during nats consume : %v", err)
-		}
-	}
 }
