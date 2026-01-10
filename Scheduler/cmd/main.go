@@ -47,11 +47,7 @@ func main() {
 }
 
 func funcTest(ctx context.Context) {
-    configURL := os.Getenv("CONFIG_API_BASE_URL") 
-    if configURL == "" {
-        log.Printf("CONFIG_API_BASE_URL is not set")
-        return
-    }
+    configURL := "http://localhost:8080"
 
     agendas, err := fetchAgendas(configURL)
     if err != nil {
@@ -69,7 +65,6 @@ func funcTest(ctx context.Context) {
             continue
         }
 
-        // This is the next step: fetch calendar for each agenda
         if err := fetchAndProcessCalendar(a.UcaId, *a.Id); err != nil {
             log.Printf("Error processing agenda %q (ucaid=%s): %v", a.Name, a.UcaId, err)
         }
@@ -213,7 +208,6 @@ func publishEvent(payload models.SchedulerPayload) error {
 	if err != nil {
 		return err
 	}
-	// Pour info, les channels en Go permettent de lier les go routines (threads) entre elles : https://gobyexample.com/channels
 	select {
 	case <-pubAckFuture.Ok():
 		return nil
@@ -236,7 +230,7 @@ func initStream() {
 	}
 
 	_, err = jsc.AddStream(&nats.StreamConfig{
-		Name:     "EVENTS",             // nom du stream
+		Name:     "EVENTS",             
 		Subjects: []string{"Scheduler.>"},
 	})
 	if err != nil {

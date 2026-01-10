@@ -21,7 +21,7 @@ func AlertConsumer() (*jetstream.Consumer, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	stream, err := js.Stream(ctx, "ALERTES")
+	stream, err := js.Stream(ctx, "Events.Changed")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get stream: %w", err)
 	}
@@ -42,7 +42,7 @@ func Consume(consumer jetstream.Consumer) (err error) {
 		logrus.Infof("Received event on %s: %s", msg.Subject(), string(msg.Data()))
 
 		err := services.SendMail(
-			"jacques.KOZIK@etu.uca.fr", // TODO: get from message or config
+			"jacques.KOZIK@etu.uca.fr",
 			"Alert: "+msg.Subject(),
 			string(msg.Data()),
 		)
