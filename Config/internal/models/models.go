@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/gofrs/uuid"
 )
 
@@ -14,4 +16,40 @@ type Alerte struct {
 	Id       *uuid.UUID `json:"id"`
 	Email    string     `json:"email"`
 	AgendaId string     `json:"agendaid"`
+}
+
+// Replicated TimeTable types for use within Config (keep in sync with TimeTable models)
+// Event represents a timetable event
+type Event struct {
+	ID          uuid.UUID   `json:"id,omitempty"`
+	AgendaIDs   []uuid.UUID `json:"agendaIds"`
+	UID         string      `json:"uid"`
+	Description string      `json:"description"`
+	Name        string      `json:"name"`
+	Start       time.Time   `json:"start"`
+	End         time.Time   `json:"end"`
+	Location    string      `json:"location"`
+	LastUpdate  *time.Time  `json:"lastUpdate,omitempty"`
+}
+
+// SchedulerPayload is the payload published to Scheduler.Events
+type SchedulerPayload struct {
+	AgendaID uuid.UUID `json:"agendaId"`
+	Event    Event     `json:"event"`
+}
+
+// FieldChange represents a single field delta
+type FieldChange struct {
+	Field  string `json:"field"`
+	Before string `json:"before,omitempty"`
+	After  string `json:"after,omitempty"`
+}
+
+// TimetableAlert is published by TimeTable when events change
+type TimetableAlert struct {
+	AgendaID uuid.UUID     `json:"agendaId"`
+	UID      string        `json:"uid"`
+	Changes  []FieldChange `json:"changes"`
+	After    Event         `json:"after"`
+	Before   *Event        `json:"before,omitempty"`
 }

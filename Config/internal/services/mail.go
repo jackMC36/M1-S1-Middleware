@@ -1,38 +1,56 @@
 package services
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"net/smtp"
+	"net/http"
 	"os"
-
-	"github.com/sirupsen/logrus"
 )
 
-// SendMail sends an email to `to` with `subject` and `body`.
-// If SMTP environment variables are not set, the function will log the message instead.
-func SendMail(to, subject, body string) error {
-	host := os.Getenv("MAIL_SMTP_HOST")
-	port := os.Getenv("MAIL_SMTP_PORT")
-	user := os.Getenv("MAIL_SMTP_USER")
-	pass := os.Getenv("MAIL_SMTP_PASS")
+const mailAPIURL = "https://mail-api.edu.forestier.re"
 
-	if host == "" || port == "" {
-		// Fallback: just log
-		logrus.Infof("[MAIL-DRYRUN] To: %s | Subject: %s | Body: %s", to, subject, body)
-		return nil
+type MailRequest struct {
+	Recipient string `json:"recipient"`
+	Subject   string `json:"subject"`
+	Content   string `json:"content"`
+}
+
+func SendMail(recipient, subject, content string) error {
+	token := os.Getenv("MAIL_API_TOKEN")
+	if token == "" {
+		return fmt.Errorf("MAIL_API_TOKEN environment variable not set")
 	}
 
-	addr := fmt.Sprintf("%s:%s", host, port)
-	auth := smtp.PlainAuth("", user, pass, host)
-
-	msg := "To: " + to + "\r\n" +
-		"Subject: " + subject + "\r\n" +
-		"MIME-version: 1.0;\r\nContent-Type: text/plain; charset=UTF-8;\r\n\r\n" +
-		body
-
-	if err := smtp.SendMail(addr, auth, user, []string{to}, []byte(msg)); err != nil {
-		return err
+	mailReq := MailRequest{
+		Recipient: recipient,
+		Subject:   subject,
+		Content:   content,
 	}
-	logrus.Infof("Email sent to %s", to)
+
+	jsonData, err := json.Marshal(mailReq)
+	if err != nil {
+		return fmt.Errorf("failed to marshal mail request: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", mailAPIURL+"/mail", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("mail API returned status %d", resp.StatusCode)
+	}
+
 	return nil
 }

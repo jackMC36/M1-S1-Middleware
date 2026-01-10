@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"middleware/example/internal/helpers"
+	"middleware/example/internal/models"
 	"middleware/example/internal/services"
 	alertesService "middleware/example/internal/services/alertes"
 
@@ -23,14 +24,15 @@ func AlertConsumer() (*jetstream.Consumer, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	stream, err := js.Stream(ctx, "EVENTS")
+	stream, err := js.Stream(ctx, "EVENT_CHANGES")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get stream: %w", err)
 	}
 
 	consumer, err := stream.CreateOrUpdateConsumer(ctx, jetstream.ConsumerConfig{
-		Durable:   "alerter-consumer",
-		AckPolicy: jetstream.AckExplicitPolicy,
+		Durable:       "alerter-consumer",
+		AckPolicy:     jetstream.AckExplicitPolicy,
+		FilterSubject: "Events.Changed",
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create consumer: %w", err)
@@ -41,36 +43,49 @@ func AlertConsumer() (*jetstream.Consumer, error) {
 
 func Consume(consumer jetstream.Consumer) (err error) {
 	cc, err := consumer.Consume(func(msg jetstream.Msg) {
-		logrus.Infof("Received event on %s: %s", msg.Subject(), string(msg.Data()))
+		logrus.Infof("Received event on %s", msg.Subject())
 
-		// Parse payload to get agenda id
-		var payload struct {
-			AgendaID string `json:"agendaId"`
+var alert models.TimetableAlert
+		if err := json.Unmarshal(msg.Data(), &alert); err != nil {
+			logrus.Warnf("Failed to unmarshal payload into TimetableAlert: %v", err)
+			_ = msg.Ack()
+			return
 		}
-		if err := json.Unmarshal(msg.Data(), &payload); err != nil {
-			logrus.Warnf("Failed to unmarshal payload: %v", err)
-		} else {
-			// fetch alertes for this agenda
-			alertes, svcErr := alertesService.GetAlertesByAgendaId(payload.AgendaID)
-			if svcErr != nil {
-				logrus.Warnf("Failed to fetch alertes for agenda %s: %v", payload.AgendaID, svcErr)
+
+		agendaID := alert.AgendaID.String()
+
+		alertes, svcErr := alertesService.GetAlertesByAgendaId(agendaID)
+		if svcErr != nil {
+			logrus.Warnf("Failed to fetch alertes for agenda %s: %v", agendaID, svcErr)
+			_ = msg.Ack()
+			return
+		}
+
+		if len(alert.Changes) == 0 {
+			_ = msg.Ack()
+			return
+		}
+
+	
+		for _, a := range alertes {
+			if a.Email == "" {
+				continue
+			}
+			subject := "Event updated: " + alert.UID
+			body := fmt.Sprintf("Event %s updated for agenda %s\n\nChanges:\n", alert.UID, alert.AgendaID.String())
+			for _, c := range alert.Changes {
+				body += fmt.Sprintf(" - %s: \"%s\" -> \"%s\"\n", c.Field, c.Before, c.After)
+			}
+			body += "\nNew event:\n" + prettyJSON(alert.After)
+
+			if err := services.SendMail(a.Email, subject, body); err != nil {
+				logrus.Warnf("Failed to send email to %s: %v", a.Email, err)
 			} else {
-				for _, a := range alertes {
-					if a.Email == "" {
-						continue
-					}
-					if err := services.SendMail(a.Email, "Alert: "+msg.Subject(), string(msg.Data())); err != nil {
-						logrus.Warnf("Failed to send email to %s: %v", a.Email, err)
-					} else {
-						logrus.Infof("Email sent to %s", a.Email)
-					}
-				}
+				logrus.Infof("Email sent to %s", a.Email)
 			}
 		}
 
-		if err := msg.Ack(); err != nil {
-			logrus.Warnf("Error acknowledging message: %v", err)
-		}
+		_ = msg.Ack()
 	})
 	if err != nil {
 		return fmt.Errorf("error creating consumer: %w", err)
@@ -80,4 +95,12 @@ func Consume(consumer jetstream.Consumer) (err error) {
 	cc.Stop()
 
 	return err
+}
+
+func prettyJSON(v interface{}) string {
+	b, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return "{}"
+	}
+	return string(b)
 }

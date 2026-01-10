@@ -10,10 +10,16 @@ import (
 	alertes_consumers "middleware/example/internal/consumers"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		logrus.Warnf("Error loading .env file: %v", err)
+	}
+
+	_ = helpers.InitNats()
 	r := chi.NewRouter()
 
 	r.Route("/agendas", func(r chi.Router) { // route /agendas
@@ -38,9 +44,6 @@ func main() {
 		})
 	})
 
-	logrus.Info("[INFO] Web server started. Now listening on *:8080")
-	logrus.Fatalln(http.ListenAndServe(":8080", r))
-
 	go func() {
 		consumer, err := alertes_consumers.AlertConsumer()
 		if err != nil {
@@ -51,6 +54,11 @@ func main() {
 			logrus.Warnf("error during nats consume : %v", err)
 		}
 	}()
+
+	logrus.Info("[INFO] Web server started. Now listening on *:8080")
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		logrus.Fatalf("HTTP server failed: %v", err)
+	}
 }
 
 func init() {
