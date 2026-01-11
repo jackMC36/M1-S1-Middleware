@@ -47,7 +47,11 @@ func main() {
 }
 
 func funcTest(ctx context.Context) {
-    configURL := "http://localhost:8080"
+    configURL := os.Getenv("CONFIG_API_BASE_URL")
+	if configURL == "" {
+		log.Printf("CONFIG_API_BASE_URL environment variable not set")
+		return
+	}
 
     agendas, err := fetchAgendas(configURL)
     if err != nil {
@@ -96,18 +100,7 @@ func fetchAgendas(configAPIBaseURL string) ([]models.Agenda, error) {
 
 
 func fetchAndProcessCalendar(ucaID string, agendaID uuid.UUID) error {
-	rawDate := "20251228T152000Z"
-
-	// 2006 = année ; 01 = mois ; 02 = jour ; 15 = heure ; 04 = minute ; 05 = seconde
-	d, _ := time.Parse("20060102T150405Z", rawDate)
-
-	if d.Before(time.Now()) {
-		fmt.Println("Avant !")
-	} else {
-		fmt.Println("Après !")
-	}
-
-	fmt.Println(d)
+	fmt.Println("Scheduler fetching calendar for UCA ID:", ucaID)
 
 	url := fmt.Sprintf("https://edt.uca.fr/jsp/custom/modules/plannings/anonymous_cal.jsp?resources=%s&projectId=3&calType=ical&nbWeeks=8&displayConfigId=128", ucaID)
 	resp, err := http.Get(url)
@@ -124,13 +117,22 @@ func fetchAndProcessCalendar(ucaID string, agendaID uuid.UUID) error {
 
 	currentlyParsing := false
 	tmpObj := map[string]interface{}{}
+	lastField := ""
+
 
 	for _, line := range lines {
 		if strings.HasPrefix(line, "BEGIN:VEVENT") {
 			currentlyParsing = true
 			tmpObj = map[string]interface{}{}
+			lastField = ""
 		} else {
 			if currentlyParsing {
+				if strings.HasPrefix(line, " ") && lastField != "" {
+					if v, ok := tmpObj[lastField].(string); ok {
+						tmpObj[lastField] = v + strings.TrimLeft(line, " ")
+					}
+					continue
+				}
 				if strings.HasPrefix(line, "END:VEVENT") {
 					uid, _ := tmpObj["uid"].(string)
 					summary, _ := tmpObj["summary"].(string)
@@ -166,26 +168,32 @@ func fetchAndProcessCalendar(ucaID string, agendaID uuid.UUID) error {
 					currentlyParsing = false
 				} else {
 					if strings.HasPrefix(line, "SUMMARY:") {
-						// Attention, le dernier caractère est un "carriage return" (\r). On le supprime sinon ça fait échouer toute notre logique.
 						tmpObj["summary"] = strings.Replace(strings.Replace(line, "SUMMARY:", "", 1), "\r", "", 1)
+						lastField = "summary"
 					}
 					if strings.HasPrefix(line, "DTSTART:") {
 						tmpObj["start"], _ = time.Parse("20060102T150405Z", strings.Replace(strings.Replace(line, "DTSTART:", "", 1), "\r", "", 1))
+						lastField = ""
 					}
 					if strings.HasPrefix(line, "DTEND:") {
-						tmpObj["end"], _ = time.Parse("20060102T150405Z", strings.Replace(strings.Replace(line, "DTEND:", "", 1), "\r", "", 1))
+						tmpObj["end"], _ = time.Parse("20060102T150405Z", strings.Replace(strings.Replace(line, "DTEND:", "", 1), "\r", "", 1))	
+						lastField = ""
 					}
 					if strings.HasPrefix(line, "DESCRIPTION:") {
 						tmpObj["description"] = strings.Replace(strings.Replace(line, "DESCRIPTION:", "", 1), "\r", "", 1)
+						lastField = "description"
 					}
 					if strings.HasPrefix(line, "UID:") {
 						tmpObj["uid"] = strings.Replace(strings.Replace(line, "UID:", "", 1), "\r", "", 1)
+						lastField = "uid"
 					}
 					if strings.HasPrefix(line, "LOCATION:") {
 						tmpObj["location"] = strings.Replace(strings.Replace(line, "LOCATION:", "", 1), "\r", "", 1)
+						lastField = "location"
 					}
 					if strings.HasPrefix(line, "LAST-MODIFIED:") {
 						tmpObj["lastModified"], _ = time.Parse("20060102T150405Z", strings.Replace(strings.Replace(line, "LAST-MODIFIED:", "", 1), "\r", "", 1))
+						lastField = ""
 					}
 				}
 			} else {
