@@ -1,0 +1,26 @@
+---
+subject: EDU Middleware - modification d'un cours
+---
+Bonjour,
+
+Votre emploi du temps a été mis à jour.
+
+Cours : {{ .EventName }}
+Date  : {{ .Start }} → {{ .End }}
+Salle : {{ .Location }}
+
+CHANGEMENTS :
+{{- range .Changes }}
+- {{ .FieldLabel }} : "{{ .Before }}" → "{{ .After }}"
+{{- else }}
+- Aucun changement détaillé.
+{{- end }}
+
+{{- if .Description }}
+
+Détails :
+{{ .Description }}
+{{- end }}
+
+Cordialement,
+L'équipe du Middleware
