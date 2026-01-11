@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	// "os"
+	"os"
 )
 
 const mailAPIURL = "https://mail-api.edu.forestier.re"
@@ -17,7 +17,7 @@ type MailRequest struct {
 }
 
 func SendMail(recipient, subject, content string) error {
-	token := "tEUBejkaAwKsBzxVTyaJkvNcUMLJbnKwqWIePukb"	//os.Getenv("MAIL_API_TOKEN")
+	token := os.Getenv("MAIL_API_TOKEN") 
 	if token == "" {
 		return fmt.Errorf("MAIL_API_TOKEN environment variable not set")
 	}
