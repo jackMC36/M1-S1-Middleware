@@ -16,6 +16,10 @@ then
 go run main.go
 ```
 
+
+## API Key
+La clé API qui permet l'envoi de mail ([mail.go](Config/internal/services/mail.go)) n'est pas fourni, il faut donc rajouter votre propre fichier.env, ou modifier le code pour qu'il soit codé en interne.
+
 ## Documentation
 
 Documentation is visible in **api** directory ([here](api/swagger.json)).
