@@ -18,8 +18,6 @@ type Alerte struct {
 	AgendaId string     `json:"agendaid"`
 }
 
-// Replicated TimeTable types for use within Config (keep in sync with TimeTable models)
-// Event represents a timetable event
 type Event struct {
 	ID          uuid.UUID   `json:"id,omitempty"`
 	AgendaIDs   []uuid.UUID `json:"agendaIds"`
@@ -32,20 +30,12 @@ type Event struct {
 	LastUpdate  *time.Time  `json:"lastUpdate,omitempty"`
 }
 
-// SchedulerPayload is the payload published to Scheduler.Events
-type SchedulerPayload struct {
-	AgendaID uuid.UUID `json:"agendaId"`
-	Event    Event     `json:"event"`
-}
-
-// FieldChange represents a single field delta
 type FieldChange struct {
 	Field  string `json:"field"`
 	Before string `json:"before,omitempty"`
 	After  string `json:"after,omitempty"`
 }
 
-// TimetableAlert is published by TimeTable when events change
 type TimetableAlert struct {
 	AgendaID uuid.UUID     `json:"agendaId"`
 	UID      string        `json:"uid"`

@@ -50,7 +50,7 @@ func main() {
 			logrus.Warnf("error during nats consumer creation : %v", err)
 			return
 		}
-		if err := alertes_consumers.Consume(*consumer); err != nil {
+		if err := alertes_consumers.Consume(consumer); err != nil {
 			logrus.Warnf("error during nats consume : %v", err)
 		}
 	}()
