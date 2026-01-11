@@ -24,7 +24,7 @@ La clé API qui permet l'envoi de mail ([mail.go](Config/internal/services/mail.
 
 Documentation is visible in **api** directory:
 - ([here for Config](Config/api/swagger.json))
-- ([here for TimeTable](Config/api/swagger.json))
+- ([here for TimeTable](TimeTable/api/swagger.json))
 
 
 ## Authors
