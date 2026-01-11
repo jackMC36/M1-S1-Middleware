@@ -10,10 +10,11 @@ go mod tidy
 Build & run :
 ```
 cd <program>/cmd
-go run main.go
-
 ```
----
+then
+```
+go run main.go
+```
 
 ## Documentation
 
