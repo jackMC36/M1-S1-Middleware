@@ -14,7 +14,7 @@ import (
 // @Summary      Get a alerte.
 // @Description  Get a alerte.
 // @Param        id           	path      string  true  "alerte UUID formatted ID"
-// @Success      200            {object}  models.alerte
+// @Success      200            {object}  models.Alerte
 // @Failure      422            "Cannot parse id"
 // @Failure      500            "Something went wrong"
 // @Router       /alertes/{id} [get]

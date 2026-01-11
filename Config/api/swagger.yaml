@@ -1,40 +1,58 @@
 basePath: /
 definitions:
-  models.User:
+  models.Agenda:
     properties:
       id:
         type: string
       name:
         type: string
+      ucaid:
+        type: string
+    type: object
+  models.Alerte:
+    properties:
+      agendaid:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
     type: object
 info:
   contact:
-    email: justine.bachelard@ext.uca.fr
-    name: Justine Bachelard.
-  description: API to manage users.
-  title: middleware/example
+    email: Jacques.KOZIK@etu.uca.fr
+    name: Jacques KOZIK .
+  description: API to manage Agendas and Alerts.
+  title: middleware/ Config API
   version: 1.0.0
 paths:
-  /users:
-    get:
-      description: Get all users.
+  /agendas/{id}:
+    delete:
+      description: Delete an agenda by ID.
+      parameters:
+      - description: Agenda UUID formatted ID
+        in: path
+        name: id
+        required: true
+        type: string
       responses:
         "200":
-          description: OK
+          description: Deleted agenda
           schema:
-            items:
-              $ref: '#/definitions/models.User'
-            type: array
+            $ref: '#/definitions/models.Agenda'
+        "400":
+          description: Cannot parse id
+        "404":
+          description: Agenda not found
         "500":
           description: Something went wrong
-      summary: Get all users.
+      summary: Delete an agenda by ID.
       tags:
-      - users
-  /users/{id}:
+      - agendas
     get:
-      description: Get a user.
+      description: Get a Agenda.
       parameters:
-      - description: User UUID formatted ID
+      - description: Agenda UUID formatted ID
         in: path
         name: id
         required: true
@@ -43,14 +61,114 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.User'
+            $ref: '#/definitions/models.Agenda'
         "422":
           description: Cannot parse id
         "500":
           description: Something went wrong
-      summary: Get a user.
+      summary: Get a Agenda.
       tags:
-      - users
+      - agendas
+    put:
+      consumes:
+      - application/json
+      description: Update an agenda by ID.
+      parameters:
+      - description: Agenda UUID formatted ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated agenda object
+        in: body
+        name: agenda
+        required: true
+        schema:
+          $ref: '#/definitions/models.Agenda'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Agenda'
+        "400":
+          description: Bad Request
+        "404":
+          description: Agenda not found
+        "500":
+          description: Something went wrong
+      summary: Update an agenda by ID.
+      tags:
+      - agendas
+  /alertes:
+    get:
+      description: Get all alertes.
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Alerte'
+            type: array
+        "500":
+          description: Something went wrong
+      summary: Get all alertes.
+      tags:
+      - alertes
+  /alertes/{id}:
+    get:
+      description: Get a alerte.
+      parameters:
+      - description: alerte UUID formatted ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Alerte'
+        "422":
+          description: Cannot parse id
+        "500":
+          description: Something went wrong
+      summary: Get a alerte.
+      tags:
+      - alertes
+    put:
+      consumes:
+      - application/json
+      description: Update an alerte by ID.
+      parameters:
+      - description: Alerte UUID formatted ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated alerte object
+        in: body
+        name: alerte
+        required: true
+        schema:
+          $ref: '#/definitions/models.Alerte'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Alerte'
+        "400":
+          description: Bad Request
+        "404":
+          description: Alerte not found
+        "500":
+          description: Something went wrong
+      summary: Update an alerte by ID.
+      tags:
+      - alertes
 schemes:
 - http
 swagger: "2.0"

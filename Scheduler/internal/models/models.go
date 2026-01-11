@@ -23,16 +23,6 @@ type Agenda struct {
     Name  string     `json:"name"`
 }
 
-
-//DTStart format : "2006-01-02T15:04:05-07:00"
-//DTEnd format : "2006-01-02T15:04:05-07:00"
-
-//Summary: Option CM Méthodes approchées
-//DESCRIPTION:\n\nMASTER 1 INFO\nNGUYEN MINH HIEU\n\n(Updated :20/11/2024 1
-//UID:ADE60323032342d323032352d5543412d33343338392d302d34
-//LAST-MODIFIED:20241120T170100Z
-
-
 type SchedulerPayload struct {
 	AgendaID uuid.UUID 	`json:"agendaId"`
 	Event    Event     	`json:"event"`

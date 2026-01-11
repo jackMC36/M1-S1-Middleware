@@ -10,48 +10,25 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "Justine Bachelard.",
-            "email": "justine.bachelard@ext.uca.fr"
+            "name": "Jacques KOZIK .",
+            "email": "Jacques.KOZIK@etu.uca.fr"
         },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/users": {
+        "/agendas/{id}": {
             "get": {
-                "description": "Get all users.",
+                "description": "Get a Agenda.",
                 "tags": [
-                    "users"
+                    "agendas"
                 ],
-                "summary": "Get all users.",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.User"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Something went wrong"
-                    }
-                }
-            }
-        },
-        "/users/{id}": {
-            "get": {
-                "description": "Get a user.",
-                "tags": [
-                    "users"
-                ],
-                "summary": "Get a user.",
+                "summary": "Get a Agenda.",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User UUID formatted ID",
+                        "description": "Agenda UUID formatted ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -61,7 +38,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.User"
+                            "$ref": "#/definitions/models.Agenda"
                         }
                     },
                     "422": {
@@ -71,17 +48,218 @@ const docTemplate = `{
                         "description": "Something went wrong"
                     }
                 }
+            },
+            "put": {
+                "description": "Update an agenda by ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agendas"
+                ],
+                "summary": "Update an agenda by ID.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Agenda UUID formatted ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated agenda object",
+                        "name": "agenda",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Agenda"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Agenda"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Agenda not found"
+                    },
+                    "500": {
+                        "description": "Something went wrong"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an agenda by ID.",
+                "tags": [
+                    "agendas"
+                ],
+                "summary": "Delete an agenda by ID.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Agenda UUID formatted ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deleted agenda",
+                        "schema": {
+                            "$ref": "#/definitions/models.Agenda"
+                        }
+                    },
+                    "400": {
+                        "description": "Cannot parse id"
+                    },
+                    "404": {
+                        "description": "Agenda not found"
+                    },
+                    "500": {
+                        "description": "Something went wrong"
+                    }
+                }
+            }
+        },
+        "/alertes": {
+            "get": {
+                "description": "Get all alertes.",
+                "tags": [
+                    "alertes"
+                ],
+                "summary": "Get all alertes.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Alerte"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong"
+                    }
+                }
+            }
+        },
+        "/alertes/{id}": {
+            "get": {
+                "description": "Get a alerte.",
+                "tags": [
+                    "alertes"
+                ],
+                "summary": "Get a alerte.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "alerte UUID formatted ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Alerte"
+                        }
+                    },
+                    "422": {
+                        "description": "Cannot parse id"
+                    },
+                    "500": {
+                        "description": "Something went wrong"
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an alerte by ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "alertes"
+                ],
+                "summary": "Update an alerte by ID.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Alerte UUID formatted ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated alerte object",
+                        "name": "alerte",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Alerte"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Alerte"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Alerte not found"
+                    },
+                    "500": {
+                        "description": "Something went wrong"
+                    }
+                }
             }
         }
     },
     "definitions": {
-        "models.User": {
+        "models.Agenda": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "ucaid": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Alerte": {
+            "type": "object",
+            "properties": {
+                "agendaid": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 }
             }
@@ -95,8 +273,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "/",
 	Schemes:          []string{"http"},
-	Title:            "middleware/example",
-	Description:      "API to manage users.",
+	Title:            "middleware/ Config API",
+	Description:      "API to manage Agendas and Alerts.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

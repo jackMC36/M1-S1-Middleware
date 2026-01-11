@@ -11,7 +11,7 @@ import (
 // @Tags         alertes
 // @Summary      Get all alertes.
 // @Description  Get all alertes.
-// @Success      200            {array}  models.User
+// @Success      200            {array}  models.Alerte
 // @Failure      500             "Something went wrong"
 // @Router       /alertes [get]
 func GetAlertes(w http.ResponseWriter, _ *http.Request) {

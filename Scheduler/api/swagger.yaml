@@ -1,56 +1,12 @@
 basePath: /
-definitions:
-  models.User:
-    properties:
-      id:
-        type: string
-      name:
-        type: string
-    type: object
 info:
   contact:
-    email: justine.bachelard@ext.uca.fr
-    name: Justine Bachelard.
-  description: API to manage users.
-  title: middleware/example
+    email: Jacques.KOZIK@etu.uca.fr ou Marc_Achraf_Atef.MORCOS@etu.uca.fr
+    name: Jacques KOZIK et Marc MORCOS.
+  description: API to manage Scheduler.
+  title: middleware/ Scheduler API
   version: 1.0.0
-paths:
-  /users:
-    get:
-      description: Get all users.
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.User'
-            type: array
-        "500":
-          description: Something went wrong
-      summary: Get all users.
-      tags:
-      - users
-  /users/{id}:
-    get:
-      description: Get a user.
-      parameters:
-      - description: User UUID formatted ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.User'
-        "422":
-          description: Cannot parse id
-        "500":
-          description: Something went wrong
-      summary: Get a user.
-      tags:
-      - users
+paths: {}
 schemes:
 - http
 swagger: "2.0"

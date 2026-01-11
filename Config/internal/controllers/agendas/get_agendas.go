@@ -9,12 +9,12 @@ import (
 
 // GetAgendas
 // @Tags         agendas
-// @Summary      Get all Agendas.
-// @Description  Get all Agendas.
-// @Param        none
-// @Success      200            {object}  models.Agenda
-// @Failure      500            "Something went wrong"
-// @Router       /agendas/ [get]
+// @Summary      Get all agendas
+// @Description  Returns the list of agendas
+// @Success      200  {array}   models.Agenda
+// @Failure      500  {object}  helpers.ErrorResponse "Something went wrong"
+// @Router       /agendas [get]
+
 func GetAgendas(w http.ResponseWriter, _ *http.Request) {
 	agendas, err := agendas.GetAllagendas()
 	if err != nil {
