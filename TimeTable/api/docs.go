@@ -53,6 +53,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/events": {
+            "get": {
+                "description": "Returns all events.",
+                "tags": [
+                    "events"
+                ],
+                "summary": "Get all events.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Event"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong"
+                    }
+                }
+            }
+        },
         "/events/{id}": {
             "get": {
                 "description": "Get a event.",
@@ -114,6 +137,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "description": "Summary",
                     "type": "string"
                 },
                 "start": {

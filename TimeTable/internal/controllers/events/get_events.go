@@ -5,24 +5,17 @@ import (
 	"middleware/example/internal/helpers"
 	"middleware/example/internal/services/events"
 	"net/http"
-
-	"github.com/gofrs/uuid"
 )
 
 // GetEvents
 // @Tags         events
-// @Summary      Get events for an agenda.
-// @Description  Returns all events linked to the provided agenda ID.
-// @Param        id            path      string  true  "Agenda UUID formatted ID"
+// @Summary      Get all events.
+// @Description  Returns all events.
 // @Success      200            {array}   models.Event
-// @Failure      422            "Cannot parse id"
 // @Failure      500            "Something went wrong"
-// @Router       /agendas/{id}/events [get]
+// @Router       /events [get]
 func GetEvents(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	agendaId, _ := ctx.Value("agendaId").(uuid.UUID) // getting key set in agendas.Context
-
-	evts, err := events.GetEventsByAgenda(agendaId)
+	evts, err := events.GetAllEvents()
 	if err != nil {
 		body, status := helpers.RespondError(err)
 		w.WriteHeader(status)

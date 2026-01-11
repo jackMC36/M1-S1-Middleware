@@ -22,6 +22,19 @@ func GetEventsByAgenda(agendaID uuid.UUID) ([]models.Event, error) {
 	return events, nil
 }
 
+func GetAllEvents() ([]models.Event, error) {
+	var err error
+	// calling repository
+	events, err := repository.GetAllEvents()
+	// managing errors
+	if err != nil {
+		logrus.Errorf("error retrieving all events : %s", err.Error())
+		return nil, &models.ErrorGeneric{
+			Message: "Something went wrong while retrieving all events"}
+	}
+	return events, nil
+}
+
 func GetEventById(id uuid.UUID) (*models.Event, error) {
 	event, err := repository.GetEventById(id)
 	if err != nil {

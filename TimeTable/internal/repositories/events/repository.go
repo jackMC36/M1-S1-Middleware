@@ -145,6 +145,42 @@ func GetEventsByAgenda(agendaID uuid.UUID) ([]models.Event, error) {
 	return out, nil
 }
 
+func GetAllEvents() ([]models.Event, error) {
+	db, err := helpers.OpenDB()
+	if err != nil {
+		return nil, err
+	}
+	defer helpers.CloseDB(db)
+
+	const q = `
+		SELECT e.id, e.uid, e.description, e.name, e.start, e."end", e.location, e.last_update, GROUP_CONCAT(ea.agenda_id) AS agenda_ids
+		FROM events e
+		LEFT JOIN events_agendas ea
+			ON ea.event_id = e.id
+		GROUP BY e.id, e.uid, e.description, e.name, e.start, e."end", e.location, e.last_update
+		ORDER BY e.start;
+	`
+
+	rows, err := db.Query(q)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []models.Event
+	for rows.Next() {
+		ev, err := scanEvent(rows)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, ev)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func GetEventById(id uuid.UUID) (*models.Event, error) {
 	db, err := helpers.OpenDB()
 	if err != nil {
